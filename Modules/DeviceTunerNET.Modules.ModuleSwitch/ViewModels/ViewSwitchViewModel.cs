@@ -45,6 +45,9 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             CheckedCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
             UncheckedCommand = new DelegateCommand(StopCommandExecute, StopCommandCanExecute);
             PrintTestLabel = new DelegateCommand(async () => await PrintLabelCommandExecute(), CanPrintLabelCommandExecute);
+            PrintSelectedLabel = new DelegateCommand(async () => await PrintSelectedLabelCommandExecute(), CanPrintSelectedLabelCommandExecute)
+                .ObservesProperty(() => IsSelectedSwitchCanBePrinted)
+                .ObservesProperty(() => SelectedPrinter);
 
             Title = "Switch"; // Заголовок вкладки
 
@@ -67,12 +70,11 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             SelectedStrategy = AvailableStrategies?.FirstOrDefault();
         }
 
-        
-
         #region Commands
         public DelegateCommand CheckedCommand { get; }
         public DelegateCommand UncheckedCommand { get; }
         public DelegateCommand PrintTestLabel { get; }
+        public DelegateCommand PrintSelectedLabel { get; }
 
         private bool StopCommandCanExecute()
         {
@@ -99,7 +101,17 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool CanPrintLabelCommandExecute()
         {
-            return IsCanDoPrint;
+            if (IsCanDoStart == true && SelectedPrinter != null) 
+            {
+                return true;
+            }
+            return false;
+        }
+
+
+        private bool CanPrintSelectedLabelCommandExecute()
+        {
+            return IsSelectedSwitchCanBePrinted;
         }
 
         private Task PrintLabelCommandExecute()
@@ -121,6 +133,49 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                         Serial = "ES50003704",
                         Cabinet = "ШКО1"
                     })))
+                {
+                    _dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        ObserveConsole += "Printing module return \"Complete\"" + "\r\n";
+                    }));
+                }
+                else
+                {
+                    _dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        ObserveConsole += "Printing module return \"False\"";
+                    }));
+                }
+            });
+        }
+
+        private Task PrintSelectedLabelCommandExecute()
+        {
+            return Task.Run(() =>
+            {
+                if (SelectedDevice == null) 
+                {
+                    return;
+                }
+                // Выводим в консоль Printing...
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ObserveConsole += "Starting print..." + "\r\n";
+                }));
+
+                var printedSwitch = new EthernetSwitch(null)
+                {
+                    AddressIP = SelectedDevice.AddressIP,
+                    CIDR = IPMask,
+                    Designation = SelectedDevice.Designation,
+                    Serial = SelectedDevice.Serial,
+                    Cabinet = SelectedDevice.Cabinet,
+                };
+
+                if (_printService.CommonPrintLabel(
+                        SelectedPrinter, 
+                        @PrintLabelPath, 
+                        GetPrintingDict(printedSwitch)))
                 {
                     _dispatcher.BeginInvoke(new Action(() =>
                     {

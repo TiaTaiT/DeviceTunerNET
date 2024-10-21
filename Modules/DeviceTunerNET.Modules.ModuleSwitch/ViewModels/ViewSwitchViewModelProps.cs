@@ -1,21 +1,7 @@
-﻿using DeviceTunerNET.Core;
-using DeviceTunerNET.Core.Mvvm;
-using DeviceTunerNET.Modules.ModuleSwitch.Models;
-using DeviceTunerNET.Services.Interfaces;
+﻿using DeviceTunerNET.Core.Mvvm;
 using DeviceTunerNET.SharedDataModel;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Regions;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Threading;
+
 
 namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 {
@@ -36,10 +22,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             get => _selectedStrategy;
             set
             {
-                /*
-                if (value != null)
-                    IsCanDoPrint = true;
-                */
                 SetProperty(ref _selectedStrategy, value);
             }
         }
@@ -101,7 +83,10 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             {
                 // Если пошкафная настройка коммутаторов и выделен коммутатор => можно активировать кнопку старт
                 if (IsCheckedByCabinets)
+                {
                     IsCanDoStart = true;
+                    IsSelectedSwitchCanBePrinted = !string.IsNullOrEmpty(value.Serial);
+                }
                 SetProperty(ref _selectedDevice, value);
             }
         }
@@ -113,7 +98,9 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             set
             {
                 if (value != null)
-                    IsCanDoPrint = true;
+                {
+                    IsCanBePrinted = true;
+                }
                 SetProperty(ref _selectedPrinter, value);
             }
         }
@@ -197,14 +184,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             }
         }
 
-        private bool _isCanDoPrint;
-        public bool IsCanDoPrint
+        private bool _isCanBePrinted;
+        public bool IsCanBePrinted
         {
-            get => _isCanDoPrint;
+            get => _isCanBePrinted;
             set
             {
                 PrintTestLabel.RaiseCanExecuteChanged();
-                SetProperty(ref _isCanDoPrint, value);
+                SetProperty(ref _isCanBePrinted, value);
             }
         }
 
@@ -213,6 +200,16 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         {
             get => _allowPrintLabel;
             set => SetProperty(ref _allowPrintLabel, value);
+        }
+
+        private bool _isSelectedSwitchCanBePrinted;
+        public bool IsSelectedSwitchCanBePrinted
+        {
+            get => _isSelectedSwitchCanBePrinted;
+            set
+            {
+                SetProperty(ref _isSelectedSwitchCanBePrinted, value);
+            }
         }
         #endregion
     }
