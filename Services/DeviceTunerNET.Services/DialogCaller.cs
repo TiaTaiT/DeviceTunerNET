@@ -1,5 +1,5 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
-using Prism.Services.Dialogs;
+using Prism.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

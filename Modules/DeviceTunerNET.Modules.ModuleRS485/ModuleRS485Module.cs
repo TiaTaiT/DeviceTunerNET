@@ -2,7 +2,7 @@
 using DeviceTunerNET.Modules.ModuleRS485.Views;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 
 namespace DeviceTunerNET.Modules.ModuleRS485
 {

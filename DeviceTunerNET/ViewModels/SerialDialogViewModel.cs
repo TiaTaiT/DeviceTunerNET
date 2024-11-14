@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using Prism.Commands;
+using Prism.Dialogs;
 using Prism.Mvvm;
-using Prism.Services.Dialogs;
 
 namespace DeviceTunerNET.ViewModels
 {
@@ -48,6 +48,8 @@ namespace DeviceTunerNET.ViewModels
             set => SetProperty(ref _designation, value);
         }
 
+        public DialogCloseListener RequestClose { get; }
+
         public bool CanCloseDialog() => true;
 
         protected virtual void CloseDialog(string parameter)
@@ -64,7 +66,12 @@ namespace DeviceTunerNET.ViewModels
             {
                 {"Serial", Serial}
             };
-            RequestClose(new DialogResult(result, parameters));
+            var dialogResult = new DialogResult()
+            {
+                Result = result,
+                Parameters = parameters
+            };
+            RequestClose.Invoke(dialogResult);
             //RaiseRequestClose(new DialogResult(result));
         }
 
@@ -85,6 +92,6 @@ namespace DeviceTunerNET.ViewModels
             Designation = parameters.GetValue<string>("designation");
         }
 
-        public event Action<IDialogResult> RequestClose;
+        //public event Action<IDialogResult> RequestClose;
     }
 }

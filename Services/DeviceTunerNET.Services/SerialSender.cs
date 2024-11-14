@@ -625,7 +625,7 @@ namespace DeviceTunerNET.Services
 
         private bool SendRemoteDeviceUdpType(byte udpType, ushort addressOffset)
         {
-            var bytes = BitConverter.GetBytes(udpType);
+            var bytes = BitConverter.GetBytes((short)udpType);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
             var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
 

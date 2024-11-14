@@ -4,7 +4,7 @@ using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

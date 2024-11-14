@@ -7,7 +7,6 @@ using DeviceTunerNET.Services.SwitchesStrategies;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.Views;
 using DryIoc;
-using Prism.DryIoc;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -98,8 +97,8 @@ namespace DeviceTunerNET
             containerRegistry.Register<IDialogCaller, DialogCaller>();
             containerRegistry.Register<IUploadSerialManager, UploadSerialManager>();
 
-            containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
-            containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);
+            containerRegistry.Register<ISender, EltexTelnet>(/*serviceKey: SrvKey.telnetKey*/);
+            containerRegistry.Register<ISender, EltexSsh>(/*serviceKey: SrvKey.sshKey*/);
 
             containerRegistry.Register<ITftpServerManager, TftpServerManager>();
             containerRegistry.Register<IConfigParser, ConfigParser>();
