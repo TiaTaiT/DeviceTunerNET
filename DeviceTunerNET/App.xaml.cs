@@ -85,7 +85,8 @@ namespace DeviceTunerNET
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
             
             containerRegistry.Register<IFileDialogService, FileDialogService>();
-            containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
+            //containerRegistry.Register<IDataDecoder, ExcelDataDecoder>();
+            containerRegistry.Register<IDataDecoder, GoogleTablesDecoder>();
             containerRegistry.Register<IPrintService, DymoModule>();
             containerRegistry.Register<ISwitchConfigUploader, Eltex>();
             containerRegistry.Register<ISerialSender, SerialSender>();

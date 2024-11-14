@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
-    public interface IExcelDataDecoder
+    public interface IDataDecoder
     {
-        List<Cabinet> GetCabinetsFromExcel(string ExcelFileFullPath);
+        List<Cabinet> GetCabinetsAsync(string ExcelFileFullPath);
         //bool SaveDevice<T>(T arg) where T : SimplestСomponent;
         bool SaveSerialNumber(int id, string serialNumber);
 

@@ -12,7 +12,7 @@ using DeviceTunerNET.SharedDataModel.Devices;
 
 namespace DeviceTunerNET.Services
 {
-    public class ExcelDataDecoder : IExcelDataDecoder
+    public class ExcelDataDecoder : IDataDecoder
     {
         #region Constants
         private const char transparent = 'T';
@@ -67,7 +67,7 @@ namespace DeviceTunerNET.Services
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
-        public List<Cabinet> GetCabinetsFromExcel(string excelFileFullPath)
+        public List<Cabinet> GetCabinetsAsync(string excelFileFullPath)
         {
             ExcelInit(excelFileFullPath);
 

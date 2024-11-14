@@ -13,11 +13,11 @@ namespace DeviceTunerNET.Services
         private List<Cabinet> _cabinetsLst = new();
 
         private readonly IEventAggregator _ea;
-        private readonly IExcelDataDecoder _excelDataDecoder;
+        private readonly IDataDecoder _excelDataDecoder;
 
         private int _dataProviderType = 1;
 
-        public DataRepositoryService(IEventAggregator ea, IExcelDataDecoder excelDataDecoder)
+        public DataRepositoryService(IEventAggregator ea, IDataDecoder excelDataDecoder)
         {
             _ea = ea;
             _excelDataDecoder = excelDataDecoder;
@@ -32,7 +32,7 @@ namespace DeviceTunerNET.Services
             switch (_dataProviderType)
             {
                 case 1:
-                    _cabinetsLst = _excelDataDecoder.GetCabinetsFromExcel(_fullPathToData);
+                    _cabinetsLst = _excelDataDecoder.GetCabinetsAsync(_fullPathToData);
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории

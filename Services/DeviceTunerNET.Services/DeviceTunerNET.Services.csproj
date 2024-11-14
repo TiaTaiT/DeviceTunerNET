@@ -40,6 +40,9 @@
     <ProjectReference Include="..\DeviceTunerNET.Services.Interfaces\DeviceTunerNET.Services.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3587" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.68.0.3568" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Prism.Plugin.Logging.Abstractions" Version="8.1.16" />
     <PackageReference Include="Serilog" Version="4.1.0" />
