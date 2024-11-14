@@ -104,6 +104,7 @@ namespace DeviceTunerNET
             containerRegistry.Register<IConfigParser, ConfigParser>();
             
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
+            containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
         }
 
         protected override async void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

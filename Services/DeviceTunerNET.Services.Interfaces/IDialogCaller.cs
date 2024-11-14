@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using DeviceTunerNET.SharedModels;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
@@ -8,5 +7,7 @@ namespace DeviceTunerNET.Services.Interfaces
     {
         public string GetSerialNumber(string model, string designation);
         public void ShowMessage(string message);
+
+        public string GetUrl(IEnumerable<UrlItem> message);
     }
 }

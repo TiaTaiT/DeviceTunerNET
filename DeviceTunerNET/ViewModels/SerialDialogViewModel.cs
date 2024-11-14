@@ -53,9 +53,7 @@ namespace DeviceTunerNET.ViewModels
         public bool CanCloseDialog() => true;
 
         protected virtual void CloseDialog(string parameter)
-        {
-            
-            
+        {            
             ButtonResult result = ButtonResult.None;
 
             if (parameter?.ToLower() == "true")

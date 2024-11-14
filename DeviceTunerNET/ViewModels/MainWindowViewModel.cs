@@ -1,7 +1,10 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
+using DeviceTunerNET.SharedModels;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DeviceTunerNET.ViewModels
 {
@@ -16,19 +19,34 @@ namespace DeviceTunerNET.ViewModels
 
         private readonly IFileDialogService _dialogService;
         private readonly IDataRepositoryService _dataRepositoryService;
+        private readonly IDialogCaller _dialogCaller;
 
         public DelegateCommand OpenFileCommand { get; }
+        public DelegateCommand OpenUrlCommand { get; }
         public DelegateCommand SaveFileCommand { get; }
         public DelegateCommand CloseAppCommand { get; }
 
-        public MainWindowViewModel(IFileDialogService dialogService, IDataRepositoryService dataRepositoryService)
+        public MainWindowViewModel(IFileDialogService dialogService, IDataRepositoryService dataRepositoryService, IDialogCaller dialogCaller)
         {
             _dialogService = dialogService;
             _dataRepositoryService = dataRepositoryService;
+            _dialogCaller = dialogCaller;
 
             OpenFileCommand = new DelegateCommand(OpenFileExecute, OpenFileCanExecute);
+            OpenUrlCommand = new DelegateCommand(async () => await OpenUrlExecute(), OpenUrlCanExecute);
             SaveFileCommand = new DelegateCommand(SaveFileExecute, SaveFileCanExecute);
             CloseAppCommand = new DelegateCommand(CloseAppExecute, CloseAppCanExecute);
+        }
+
+        private bool OpenUrlCanExecute()
+        {
+            return true;
+        }
+
+        private Task OpenUrlExecute()
+        {
+            
+            return Task.Run(GetUrlWithData);
         }
 
         private bool CloseAppCanExecute()
@@ -64,6 +82,19 @@ namespace DeviceTunerNET.ViewModels
             var selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
             // 1 - Поставщик данных - Excel
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
+        }
+
+        private void GetUrlWithData()
+        {
+            IEnumerable<UrlItem> historyUrls =
+                [
+                    new UrlItem ( "Example", "https://example.com" ),
+                    new UrlItem ( "OpenAI", "https://openai.com" ),
+                    new UrlItem ( "Microsoft", "https://microsoft.com" ),
+                ];
+            var result = _dialogCaller.GetUrl(historyUrls);
+            if (string.IsNullOrEmpty(result))
+                return;
         }
     }
 }
