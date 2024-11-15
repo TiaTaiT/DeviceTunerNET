@@ -74,7 +74,7 @@ namespace DeviceTunerNET.Services
             package.Save();
         }
 
-        public void SetCellColor(string cellColor, System.Drawing.Color color, int row, int column)
+        public void SetCellColor(System.Drawing.Color color, int row, int column)
         {
             worksheet.Cells[row, column].Style.Font.Color.SetColor(color);
         }

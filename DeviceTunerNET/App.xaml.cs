@@ -87,7 +87,7 @@ namespace DeviceTunerNET
             container.Register<IDataRepositoryService, DataRepositoryService>(Reuse.Singleton);
 
             container.Register<IFileDialogService, FileDialogService>(Reuse.Transient);
-            container.Register<IDataDecoder, ExcelDataDecoder>(Reuse.Transient);
+            container.Register<IDataDecoder, DataDecoder>(Reuse.Transient);
             container.Register<IPrintService, DymoModule>(Reuse.Transient);
             container.Register<ISwitchConfigUploader, Eltex>(Reuse.Transient);
             container.Register<ISerialSender, SerialSender>(Reuse.Transient);
@@ -105,7 +105,8 @@ namespace DeviceTunerNET
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
             containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
 
-            container.Register<IDataDecoder, ExcelDataDecoder>(serviceKey: DataSrvKey.excelKey);
+            container.Register<ITablesManager, ExcelDriver>(Reuse.Transient);
+            container.Register<IDataDecoder, DataDecoder>(serviceKey: DataSrvKey.excelKey); // !!!
             container.Register<IDataDecoder, GoogleTablesDecoder>(serviceKey: DataSrvKey.googleKey);
             container.Register<ISender, EltexTelnet>(serviceKey: SenderSrvKey.telnetKey);
             container.Register<ISender, EltexSsh>(serviceKey: SenderSrvKey.sshKey);

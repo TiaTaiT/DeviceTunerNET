@@ -12,7 +12,7 @@ using DeviceTunerNET.SharedDataModel.Devices;
 
 namespace DeviceTunerNET.Services
 {
-    public class ExcelDataDecoder : IDataDecoder
+    public class DataDecoder : IDataDecoder
     {
         #region Constants
         private const char transparent = 'T';
@@ -47,29 +47,28 @@ namespace DeviceTunerNET.Services
         private const string qcDidntPass = "Failed!";
 
 
-        private ExcelPackage package;
-        private FileInfo sourceFile;
-        private ExcelWorksheet worksheet;
-        int rows; // number of rows in the sheet
-        int columns;//number of columns in the sheet
+        //private ExcelPackage package;
+        //private FileInfo sourceFile;
+        //private ExcelWorksheet worksheet;
+        //int rows; // number of rows in the sheet
+        //int columns;//number of columns in the sheet
 
         //Dictionary with all found C2000-Ethernet
         private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = new Dictionary<C2000Ethernet, Tuple<char, int>>();
 
         private readonly IDeviceGenerator _devicesGenerator;
+        private readonly ITablesManager _tablesManager;
 
-        public ExcelDataDecoder(IDeviceGenerator deviceGenerator)
+        public DataDecoder(IDeviceGenerator deviceGenerator, ITablesManager tablesManager)
         {
             _devicesGenerator = deviceGenerator;
-            // Remove "IBM437 is not a supported encoding" error
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            _tablesManager = tablesManager;
         }
 
         public List<Cabinet> GetCabinetsAsync(string excelFileFullPath)
         {
-            ExcelInit(excelFileFullPath);
+            //ExcelInit(excelFileFullPath);
+            _tablesManager.SetCurrentDocument(excelFileFullPath);
 
             //Определяем в каких столбцах находятся обозначения приборов и их адреса
             FindColumnIndexesByHeader();
@@ -83,24 +82,24 @@ namespace DeviceTunerNET.Services
             var cabinet = new Cabinet();
             var lastDevCabinet = "";
             var lastDevProject = "";
-            for (var rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
+            for (var rowIndex = CaptionRow + 1; rowIndex <= _tablesManager.Rows; rowIndex++)
             {
-                TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out var devRS232Addr);
-                TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out var devRS485Addr);
+                TryParse(_tablesManager.GetCellValueByIndex(rowIndex, RS232addressCol), out int devRS232Addr);
+                TryParse(_tablesManager.GetCellValueByIndex(rowIndex, RS485addressCol), out int devRS485Addr);
 
                 var deviceDataSet = new DeviceDataSet
                 {
                     Id = rowIndex,
-                    DevProject = (worksheet.Cells[rowIndex, projectCol].Value?.ToString()) ?? lastDevProject,
-                    DevCabinet = (worksheet.Cells[rowIndex, parentCol].Value?.ToString()) ?? lastDevCabinet,
-                    DevName = worksheet.Cells[rowIndex, nameCol].Value?.ToString(),
-                    DevModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString(),
-                    DevIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString(),
-                    DevSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString(),
-                    DevRang = worksheet.Cells[rowIndex, rangCol].Value?.ToString(),
+                    DevProject = DefaultValue(_tablesManager.GetCellValueByIndex(rowIndex, projectCol), lastDevProject), //(worksheet.Cells[rowIndex, projectCol].Value?.ToString()) ?? lastDevProject,
+                    DevCabinet = DefaultValue(_tablesManager.GetCellValueByIndex(rowIndex, parentCol), lastDevCabinet), //(worksheet.Cells[rowIndex, parentCol].Value?.ToString()) ?? lastDevCabinet,
+                    DevName = _tablesManager.GetCellValueByIndex(rowIndex, nameCol),// worksheet.Cells[rowIndex, nameCol].Value?.ToString(),
+                    DevModel = _tablesManager.GetCellValueByIndex(rowIndex, modelCol),// worksheet.Cells[rowIndex, modelCol].Value?.ToString(),
+                    DevIPAddr = _tablesManager.GetCellValueByIndex(rowIndex, IPaddressCol),// worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString(),
+                    DevSerial = _tablesManager.GetCellValueByIndex(rowIndex, serialCol),// worksheet.Cells[rowIndex, serialCol].Value?.ToString(),
+                    DevRang = _tablesManager.GetCellValueByIndex(rowIndex, rangCol),// worksheet.Cells[rowIndex, rangCol].Value?.ToString(),
                     DevRS232Addr = devRS232Addr,
                     DevRS485Addr = devRS485Addr,
-                    DevQcPassed = GetQcStatus(worksheet.Cells[rowIndex, qcCol].Value?.ToString())
+                    DevQcPassed = GetQcStatus(_tablesManager.GetCellValueByIndex(rowIndex, qcCol)/*worksheet.Cells[rowIndex, qcCol].Value?.ToString()*/),
                 };
 
                 if (!string.Equals(deviceDataSet.DevCabinet, lastDevCabinet)) // Если новый шкаф - сохранить старый в список шкафов
@@ -130,7 +129,7 @@ namespace DeviceTunerNET.Services
                     cabinet.AddItem(deviceWithSettings);
                 }
                                
-                if (rowIndex == rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
+                if (rowIndex == _tablesManager.Rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
                 {
                     cabinetsLst.Add(cabinet);
                 }
@@ -197,23 +196,20 @@ namespace DeviceTunerNET.Services
             }
             Debug.WriteLine("----------------");
         }
-
+        /*
         private void ExcelInit(string filepath)
         {
             sourceFile = new FileInfo(filepath);
             package = new ExcelPackage(sourceFile);
 
             worksheet = package.Workbook.Worksheets["Адреса"];
-            /*
-            worksheet.Cells[1, 1].Value = "tytytyty";
-            worksheet.Cells["A2"].Value = "opopopop";
-            */
+
             // get number of rows and columns in the sheet
             rows = worksheet.Dimension.Rows; // 20
             columns = worksheet.Dimension.Columns; // 7
 
         }
-
+        */
         private static ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings)
         {
             if (device is EthernetSwitch ethernetSwitch)
@@ -274,9 +270,9 @@ namespace DeviceTunerNET.Services
 
         private void FindColumnIndexesByHeader()
         {
-            for (var colIndex = 1; colIndex <= columns; colIndex++)
+            for (var colIndex = 1; colIndex <= _tablesManager.Columns; colIndex++)
             {
-                var content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
+                var content = _tablesManager.GetCellValueByIndex(CaptionRow, colIndex);// worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
 
                 if (content == ColNamesCaption) { nameCol = colIndex; }
                 if (content == ColIPAddressCaption) { IPaddressCol = colIndex; }
@@ -294,7 +290,7 @@ namespace DeviceTunerNET.Services
         public bool SaveSerialNumber(int id, string serialNumber)
         {
             // записываем серийник коммутатора в графу "Серийный номер" напротив номера строки указанного в id
-            worksheet.Cells[id, serialCol].Value = serialNumber;
+            _tablesManager.SetCellValueByIndex(serialNumber, id, serialCol); // worksheet.Cells[id, serialCol].Value = serialNumber;
 
             return saveCurrentPackage();
         }
@@ -304,13 +300,13 @@ namespace DeviceTunerNET.Services
             // записываем метку прохождения прохождения контроля качества в графу "QC" напротив номера строки указанного в id
             if (qualityControlPassed)
             {
-                worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Black);
-                worksheet.Cells[id, qcCol].Value = qcPassed;
+                _tablesManager.SetCellColor(Color.Black, id, qcCol); // worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Black);
+                _tablesManager.SetCellValueByIndex(qcPassed, id, qcCol); // worksheet.Cells[id, qcCol].Value = qcPassed;
             }
             else
             {
-                worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Red);
-                worksheet.Cells[id, qcCol].Value = qcDidntPass;
+                _tablesManager.SetCellColor(Color.Red, id, qcCol); // worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Red);
+                _tablesManager.SetCellValueByIndex(qcDidntPass, id, qcCol); // worksheet.Cells[id, qcCol].Value = qcDidntPass;
             }
 
             return saveCurrentPackage();
@@ -320,13 +316,18 @@ namespace DeviceTunerNET.Services
         {
             try
             {
-                package.Save();
+                _tablesManager.Save();
             }
             catch
             {
                 return false;
             }
             return true;
+        }
+
+        private static string DefaultValue(string value, string defaultValue)
+        {
+            return string.IsNullOrEmpty(value) ? defaultValue : value;
         }
     }
     

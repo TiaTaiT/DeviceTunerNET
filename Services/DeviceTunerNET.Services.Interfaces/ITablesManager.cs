@@ -15,7 +15,7 @@
         string GetCellValueByIndex(int row, int column);
         void SetCellValueByIndex(string cellValue, int row, int column);
 
-        void SetCellColor(string cellColor, System.Drawing.Color color, int row, int column);
+        void SetCellColor(System.Drawing.Color color, int row, int column);
 
         void Save();
     }
