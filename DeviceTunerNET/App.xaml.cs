@@ -107,7 +107,7 @@ namespace DeviceTunerNET
             containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
 
             container.Register<ITablesManager, ExcelDriver>(serviceKey: DataSrvKey.excelKey);
-            container.Register<IDataDecoder, GoogleTablesDriver>(serviceKey: DataSrvKey.googleKey);
+            container.Register<ITablesManager, GoogleTablesDriver>(serviceKey: DataSrvKey.googleKey);
 
             container.Register<ISender, EltexTelnet>(serviceKey: SenderSrvKey.telnetKey);
             container.Register<ISender, EltexSsh>(serviceKey: SenderSrvKey.sshKey);

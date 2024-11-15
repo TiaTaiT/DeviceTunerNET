@@ -7,7 +7,6 @@
 
         bool SetCurrentDocument(string document);
         bool SetCurrentPageByName(string pageName);
-        bool CreateNewPage(string pageName);
 
         int GetLastRowIndex();
         int GetLastColumnIndex();

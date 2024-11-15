@@ -49,11 +49,6 @@ namespace DeviceTunerNET.Services
             return true;
         }
 
-        public bool CreateNewPage(string pageName)
-        {
-            throw new NotImplementedException();
-        }
-
         public string GetCellValueByIndex(int row, int column)
         {
             return worksheet.Cells[row, column].Value?.ToString();

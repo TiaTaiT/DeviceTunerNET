@@ -14,10 +14,10 @@ using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
-    public class GoogleTablesDriver : IDataDecoder
+    public class GoogleTablesDriver : ITablesManager
     {
         private static readonly string[] Scopes = { SheetsService.Scope.SpreadsheetsReadonly };
-        private static readonly string ApplicationName = "Google Sheets API .NET 8.0 Example";
+        private static readonly string ApplicationName = "DeviceTunerNET";
         private readonly SheetsService _service;
         private const string credentialsPath = "C:\\Users\\texvi\\Downloads\\firm-capsule-441717-e2-2f90d66e4ff2.json";
 
@@ -26,6 +26,8 @@ namespace DeviceTunerNET.Services
             get;
             set;
         }
+        public int Rows { get; set; }
+        public int Columns { get; set; }
 
         public GoogleTablesDriver()
         {
@@ -42,25 +44,15 @@ namespace DeviceTunerNET.Services
             });
         }
 
-        public List<Cabinet> GetCabinetsAsync(string ExcelFileFullPath)
+        public List<Cabinet> GetCabinetsAsync_bak(string ExcelFileFullPath)
         {
             var id = "1HCHED1c9MnpMkSqdq0j5oS8eKJPAvcOe23u9bDszbUU";
             var range = "Sheet1!A1:A13";
-            Task.Run(() => ReadDataAsync(id, range)).GetAwaiter().GetResult();
+            Task.Run(() => ReadDataAsync_bak(id, range)).GetAwaiter().GetResult();
             return new List<Cabinet> { };
         }
 
-        public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SaveSerialNumber(int id, string serialNumber)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async Task ReadDataAsync(string spreadsheetId, string range)
+        private async Task ReadDataAsync_bak(string spreadsheetId, string range)
         {
             var request = _service.Spreadsheets.Values.Get(spreadsheetId, range);
             ValueRange response;
@@ -87,7 +79,42 @@ namespace DeviceTunerNET.Services
             }
         }
 
-        public void SetDecoder(ITablesManager tablesManager)
+        public bool SetCurrentDocument(string document)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SetCurrentPageByName(string pageName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetLastRowIndex()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetLastColumnIndex()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetCellValueByIndex(int row, int column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetCellValueByIndex(string cellValue, int row, int column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetCellColor(System.Drawing.Color color, int row, int column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Save()
         {
             throw new NotImplementedException();
         }
