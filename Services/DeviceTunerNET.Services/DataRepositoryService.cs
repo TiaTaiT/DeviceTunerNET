@@ -1,7 +1,7 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
-using DeviceTunerNET.SharedDataModel.Devices;
+using DryIoc;
 using Prism.Events;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,14 +13,15 @@ namespace DeviceTunerNET.Services
         private List<Cabinet> _cabinetsLst = new();
 
         private readonly IEventAggregator _ea;
-        private readonly IDataDecoder _excelDataDecoder;
+        private readonly IResolverContext _resolver;
+        private IDataDecoder _decoder;
 
         private int _dataProviderType = 1;
 
-        public DataRepositoryService(IEventAggregator ea, IDataDecoder excelDataDecoder)
+        public DataRepositoryService(IEventAggregator ea, IResolverContext resolverContext/*IDataDecoder dataDecoder*/)
         {
             _ea = ea;
-            _excelDataDecoder = excelDataDecoder;
+            _resolver = resolverContext;
         }
 
         public void SetDevices(int DataProviderType, string FullPathToData)
@@ -32,7 +33,12 @@ namespace DeviceTunerNET.Services
             switch (_dataProviderType)
             {
                 case 1:
-                    _cabinetsLst = _excelDataDecoder.GetCabinetsAsync(_fullPathToData);
+                    _decoder = _resolver.Resolve<IDataDecoder>(serviceKey: DataSrvKey.excelKey);
+                    _cabinetsLst = _decoder.GetCabinetsAsync(_fullPathToData);
+                    break;
+                case 2:
+                    _decoder = _resolver.Resolve<IDataDecoder>(serviceKey: DataSrvKey.googleKey);
+                    _cabinetsLst = _decoder.GetCabinetsAsync(_fullPathToData);
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории
@@ -47,7 +53,7 @@ namespace DeviceTunerNET.Services
             if (_dataProviderType != 1)
                 return false;
 
-            return _excelDataDecoder.SaveSerialNumber(id, serialNumber);
+            return _decoder.SaveSerialNumber(id, serialNumber);
         }
 
         public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
@@ -55,7 +61,7 @@ namespace DeviceTunerNET.Services
             if (_dataProviderType != 1)
                 return false;
 
-            return _excelDataDecoder.SaveQualityControlPassed(id, qualityControlPassed);
+            return _decoder.SaveQualityControlPassed(id, qualityControlPassed);
         }
 
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()

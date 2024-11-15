@@ -32,8 +32,6 @@ namespace DeviceTunerNET
         private IEventAggregator _ea;
         private SerialPort _sp;
 
-        enum SenderSrvKey { telnetKey, sshKey };
-        enum DataSrvKey { excelKey, googleKey };
         protected override Window CreateShell()
         {
             _sp = new SerialPort();
@@ -104,7 +102,8 @@ namespace DeviceTunerNET
             container.Register<IConfigParser, ConfigParser>(Reuse.Transient);
 
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
-            
+            containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
+
             container.Register<IDataDecoder, ExcelDataDecoder>(serviceKey: DataSrvKey.excelKey);
             container.Register<IDataDecoder, GoogleTablesDecoder>(serviceKey: DataSrvKey.googleKey);
             container.Register<ISender, EltexTelnet>(serviceKey: SenderSrvKey.telnetKey);

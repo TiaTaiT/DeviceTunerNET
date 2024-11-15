@@ -92,9 +92,9 @@ namespace DeviceTunerNET.ViewModels
                     new UrlItem ( "OpenAI", "https://openai.com" ),
                     new UrlItem ( "Microsoft", "https://microsoft.com" ),
                 ];
-            var result = _dialogCaller.GetUrl(historyUrls);
-            if (string.IsNullOrEmpty(result))
-                return;
+            var documentId = _dialogCaller.GetUrl(historyUrls);
+            // 2 - Поставщик данных - Excel
+            _dataRepositoryService.SetDevices(2, documentId);
         }
     }
 }
