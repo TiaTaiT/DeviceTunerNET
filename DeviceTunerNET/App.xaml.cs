@@ -101,13 +101,14 @@ namespace DeviceTunerNET
             container.Register<ITftpServerManager, TftpServerManager>(Reuse.Transient);
             container.Register<IConfigParser, ConfigParser>(Reuse.Transient);
             container.Register<IGoogleDriveSheetsLister, GoogleDriveSheetsLister>(Reuse.Transient);
+            
 
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
             containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
 
-            container.Register<ITablesManager, ExcelDriver>(Reuse.Transient);
-            container.Register<IDataDecoder, DataDecoder>(serviceKey: DataSrvKey.excelKey); // !!!
-            container.Register<IDataDecoder, GoogleTablesDecoder>(serviceKey: DataSrvKey.googleKey);
+            container.Register<ITablesManager, ExcelDriver>(serviceKey: DataSrvKey.excelKey);
+            container.Register<IDataDecoder, GoogleTablesDriver>(serviceKey: DataSrvKey.googleKey);
+
             container.Register<ISender, EltexTelnet>(serviceKey: SenderSrvKey.telnetKey);
             container.Register<ISender, EltexSsh>(serviceKey: SenderSrvKey.sshKey);
         }

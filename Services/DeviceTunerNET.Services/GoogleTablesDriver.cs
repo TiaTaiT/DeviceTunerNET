@@ -14,14 +14,20 @@ using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
-    public class GoogleTablesDecoder : IDataDecoder
+    public class GoogleTablesDriver : IDataDecoder
     {
         private static readonly string[] Scopes = { SheetsService.Scope.SpreadsheetsReadonly };
         private static readonly string ApplicationName = "Google Sheets API .NET 8.0 Example";
         private readonly SheetsService _service;
         private const string credentialsPath = "C:\\Users\\texvi\\Downloads\\firm-capsule-441717-e2-2f90d66e4ff2.json";
 
-        public GoogleTablesDecoder()
+        public ITablesManager Driver
+        { 
+            get;
+            set;
+        }
+
+        public GoogleTablesDriver()
         {
             GoogleCredential credential;
             using (var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read))
@@ -79,6 +85,11 @@ namespace DeviceTunerNET.Services
             {
                 Debug.WriteLine(ex);
             }
+        }
+
+        public void SetDecoder(ITablesManager tablesManager)
+        {
+            throw new NotImplementedException();
         }
     }
 }

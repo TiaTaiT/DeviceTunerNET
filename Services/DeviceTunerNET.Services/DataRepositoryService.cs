@@ -18,10 +18,11 @@ namespace DeviceTunerNET.Services
 
         private int _dataProviderType = 1;
 
-        public DataRepositoryService(IEventAggregator ea, IResolverContext resolverContext/*IDataDecoder dataDecoder*/)
+        public DataRepositoryService(IEventAggregator ea, IDataDecoder dataDecoder, IResolverContext resolverContext)
         {
             _ea = ea;
             _resolver = resolverContext;
+            _decoder = dataDecoder;
         }
 
         public void SetDevices(int DataProviderType, string FullPathToData)
@@ -33,11 +34,11 @@ namespace DeviceTunerNET.Services
             switch (_dataProviderType)
             {
                 case 1:
-                    _decoder = _resolver.Resolve<IDataDecoder>(serviceKey: DataSrvKey.excelKey);
+                    _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.excelKey);
                     _cabinetsLst = _decoder.GetCabinetsAsync(_fullPathToData);
                     break;
                 case 2:
-                    _decoder = _resolver.Resolve<IDataDecoder>(serviceKey: DataSrvKey.googleKey);
+                    _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.googleKey);
                     _cabinetsLst = _decoder.GetCabinetsAsync(_fullPathToData);
                     break;
             }
