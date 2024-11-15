@@ -100,6 +100,7 @@ namespace DeviceTunerNET
             container.Register<IUploadSerialManager, UploadSerialManager>(Reuse.Transient);
             container.Register<ITftpServerManager, TftpServerManager>(Reuse.Transient);
             container.Register<IConfigParser, ConfigParser>(Reuse.Transient);
+            container.Register<IGoogleDriveSheetsLister, GoogleDriveSheetsLister>(Reuse.Transient);
 
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
             containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");

@@ -1,4 +1,5 @@
-﻿using DeviceTunerNET.Services.Interfaces;
+﻿using DeviceTunerNET.Services;
+using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedModels;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -20,17 +21,23 @@ namespace DeviceTunerNET.ViewModels
         private readonly IFileDialogService _dialogService;
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly IDialogCaller _dialogCaller;
+        private readonly IGoogleDriveSheetsLister _googleDriveSheetsLister;
 
         public DelegateCommand OpenFileCommand { get; }
         public DelegateCommand OpenUrlCommand { get; }
         public DelegateCommand SaveFileCommand { get; }
         public DelegateCommand CloseAppCommand { get; }
 
-        public MainWindowViewModel(IFileDialogService dialogService, IDataRepositoryService dataRepositoryService, IDialogCaller dialogCaller)
+        public MainWindowViewModel(
+            IFileDialogService dialogService, 
+            IDataRepositoryService dataRepositoryService, 
+            IDialogCaller dialogCaller,
+            IGoogleDriveSheetsLister googleDriveSheetsLister)
         {
             _dialogService = dialogService;
             _dataRepositoryService = dataRepositoryService;
             _dialogCaller = dialogCaller;
+            _googleDriveSheetsLister = googleDriveSheetsLister;
 
             OpenFileCommand = new DelegateCommand(OpenFileExecute, OpenFileCanExecute);
             OpenUrlCommand = new DelegateCommand(async () => await OpenUrlExecute(), OpenUrlCanExecute);
@@ -84,7 +91,7 @@ namespace DeviceTunerNET.ViewModels
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
         }
 
-        private void GetUrlWithData()
+        private async Task GetUrlWithData()
         {
             IEnumerable<UrlItem> historyUrls =
                 [
@@ -92,7 +99,8 @@ namespace DeviceTunerNET.ViewModels
                     new UrlItem ( "OpenAI", "https://openai.com" ),
                     new UrlItem ( "Microsoft", "https://microsoft.com" ),
                 ];
-            var documentId = _dialogCaller.GetUrl(historyUrls);
+            var availableDocs = await _googleDriveSheetsLister.ListAllSpreadsheetsAsync();
+            var documentId = _dialogCaller.GetUrl(availableDocs);
             // 2 - Поставщик данных - Excel
             _dataRepositoryService.SetDevices(2, documentId);
         }

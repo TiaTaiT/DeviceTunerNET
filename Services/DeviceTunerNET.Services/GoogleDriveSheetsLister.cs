@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
+using DeviceTunerNET.SharedModels;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
@@ -21,7 +22,7 @@ namespace DeviceTunerNET.Services
         private static readonly string[] Scopes = { DriveService.Scope.DriveReadonly };
         private static readonly string ApplicationName = "Google Drive API .NET 8.0 Example";
         private readonly DriveService _service;
-        GoogleDriveSheetsLister() 
+        public GoogleDriveSheetsLister() 
         {
             GoogleCredential credential;
             using (var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read))
@@ -36,7 +37,7 @@ namespace DeviceTunerNET.Services
             });
         }
 
-        public async Task<IEnumerable<string>> ListAllSpreadsheetsAsync()
+        public async Task<IEnumerable<UrlItem>> ListAllSpreadsheetsAsync()
         {
             var request = _service.Files.List();
             request.Q = "mimeType='application/vnd.google-apps.spreadsheet'";
@@ -45,13 +46,14 @@ namespace DeviceTunerNET.Services
             FileList result = await request.ExecuteAsync();
             IList<Google.Apis.Drive.v3.Data.File> files = result.Files;
 
-            var ids = new List<string>();
+            var ids = new List<UrlItem>();
 
             if (files != null && files.Count > 0)
             {
                 Console.WriteLine("Spreadsheets:");
                 foreach (var file in files)
                 {
+                    ids.Add(new UrlItem(file.Name, file.Id));
                     Debug.WriteLine($"Name: {file.Name}, ID: {file.Id}");
                 }
             }
