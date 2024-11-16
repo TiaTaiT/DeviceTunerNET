@@ -22,7 +22,7 @@ namespace DeviceTunerNET.Services
         private readonly IGoogleSpreadsheetCache _spreadsheetCache;
         private string _spreadsheetId;
         private string _sheetName;
-        private const string _credentialsPath = "C:\\Users\\texvi\\Downloads\\firm-capsule-441717-e2-2f90d66e4ff2.json";
+        private const string _credentialsPath = "Resources\\Files\\firm-capsule-441717-e2-2f90d66e4ff2.json";
 
         public ITablesManager Driver
         { 
