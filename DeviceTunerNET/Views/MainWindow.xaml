@@ -31,7 +31,7 @@
                 <MenuItem Header="_Close" Command="{Binding CloseAppCommand}" IsCheckable="False" />
             </MenuItem>
             <MenuItem Header="_Options">
-                <MenuItem Header="_Printers" Command="{Binding OpenFileCommand}" IsCheckable="False">
+                <MenuItem Header="_Open in browser" Command="{Binding OpenUrlInBrowserCommand}" IsCheckable="False">
                     <MenuItem.ToolTip>
                         <ToolTip>Open a file.</ToolTip>
                     </MenuItem.ToolTip>

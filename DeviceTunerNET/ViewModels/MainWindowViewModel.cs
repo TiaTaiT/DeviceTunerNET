@@ -5,6 +5,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace DeviceTunerNET.ViewModels
@@ -12,6 +13,8 @@ namespace DeviceTunerNET.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         private string _title = "Шей да пори! 2";
+        public string SpreadsheetId { get; private set; }
+
         public string Title
         {
             get => _title;
@@ -27,6 +30,7 @@ namespace DeviceTunerNET.ViewModels
         public DelegateCommand OpenUrlCommand { get; }
         public DelegateCommand SaveFileCommand { get; }
         public DelegateCommand CloseAppCommand { get; }
+        public DelegateCommand OpenUrlInBrowserCommand { get; }
 
         public MainWindowViewModel(
             IFileDialogService dialogService, 
@@ -43,6 +47,19 @@ namespace DeviceTunerNET.ViewModels
             OpenUrlCommand = new DelegateCommand(async () => await OpenUrlExecute(), OpenUrlCanExecute);
             SaveFileCommand = new DelegateCommand(SaveFileExecute, SaveFileCanExecute);
             CloseAppCommand = new DelegateCommand(CloseAppExecute, CloseAppCanExecute);
+            OpenUrlInBrowserCommand = new DelegateCommand(OpenUrlInBrowserCommandExecute, OpenUrlInBrowserCommandCanExecute)
+                .ObservesProperty(() => SpreadsheetId);
+        }
+
+        private bool OpenUrlInBrowserCommandCanExecute()
+        {
+            return true;//!string.IsNullOrEmpty(SpreadsheetId);
+        }
+
+        private void OpenUrlInBrowserCommandExecute()
+        {
+            var url = "https://docs.google.com/spreadsheets/d/" + SpreadsheetId;
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
         }
 
         private bool OpenUrlCanExecute()
@@ -94,11 +111,11 @@ namespace DeviceTunerNET.ViewModels
         private async Task GetUrlWithDataAsync()
         {
             IEnumerable<UrlItem> historyUrls = await _googleDriveSheetsLister.ListAllSpreadsheetsAsync();
-            var result = _dialogCaller.GetUrl(historyUrls);
-            if (string.IsNullOrEmpty(result))
+            SpreadsheetId = _dialogCaller.GetUrl(historyUrls);
+            if (string.IsNullOrEmpty(SpreadsheetId))
                 return;
 
-            _dataRepositoryService.SetDevices(2, result);
+            _dataRepositoryService.SetDevices(2, SpreadsheetId);
         }
     }
 }
