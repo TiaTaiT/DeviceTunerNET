@@ -13,7 +13,16 @@ namespace DeviceTunerNET.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         private string _title = "Шей да пори! 2";
-        public string SpreadsheetId { get; private set; }
+
+        private string _spreadsheetId = string.Empty;
+        public string SpreadsheetId 
+        {
+            get => _spreadsheetId;
+            set
+            {
+                SetProperty(ref _spreadsheetId, value);
+            }
+        }
 
         public string Title
         {
@@ -53,7 +62,7 @@ namespace DeviceTunerNET.ViewModels
 
         private bool OpenUrlInBrowserCommandCanExecute()
         {
-            return true;//!string.IsNullOrEmpty(SpreadsheetId);
+            return !string.IsNullOrEmpty(SpreadsheetId);
         }
 
         private void OpenUrlInBrowserCommandExecute()
