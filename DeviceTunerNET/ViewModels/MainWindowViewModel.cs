@@ -11,7 +11,7 @@ namespace DeviceTunerNET.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private string _title = "Шей да пори!";
+        private string _title = "Шей да пори! 2";
         public string Title
         {
             get => _title;
@@ -53,7 +53,7 @@ namespace DeviceTunerNET.ViewModels
         private Task OpenUrlExecute()
         {
             
-            return Task.Run(GetUrlWithData);
+            return Task.Run(GetUrlWithDataAsync);
         }
 
         private bool CloseAppCanExecute()
@@ -91,18 +91,14 @@ namespace DeviceTunerNET.ViewModels
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
         }
 
-        private async Task GetUrlWithData()
+        private async Task GetUrlWithDataAsync()
         {
-            IEnumerable<UrlItem> historyUrls =
-                [
-                    new UrlItem ( "Example", "https://example.com" ),
-                    new UrlItem ( "OpenAI", "https://openai.com" ),
-                    new UrlItem ( "Microsoft", "https://microsoft.com" ),
-                ];
-            var availableDocs = await _googleDriveSheetsLister.ListAllSpreadsheetsAsync();
-            var documentId = _dialogCaller.GetUrl(availableDocs);
-            // 2 - Поставщик данных - Excel
-            _dataRepositoryService.SetDevices(2, documentId);
+            IEnumerable<UrlItem> historyUrls = await _googleDriveSheetsLister.ListAllSpreadsheetsAsync();
+            var result = _dialogCaller.GetUrl(historyUrls);
+            if (string.IsNullOrEmpty(result))
+                return;
+
+            _dataRepositoryService.SetDevices(2, result);
         }
     }
 }

@@ -27,7 +27,7 @@
                         <ToolTip>Open URL.</ToolTip>
                     </MenuItem.ToolTip>
                 </MenuItem>
-                <MenuItem Header="_Close" Command="{Binding SaveFileCommand}" IsCheckable="False" />
+                <MenuItem Header="_Save" Command="{Binding SaveFileCommand}" IsCheckable="False" />
                 <MenuItem Header="_Close" Command="{Binding CloseAppCommand}" IsCheckable="False" />
             </MenuItem>
             <MenuItem Header="_Options">

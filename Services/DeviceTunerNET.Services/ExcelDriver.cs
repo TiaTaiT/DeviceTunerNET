@@ -38,7 +38,7 @@ namespace DeviceTunerNET.Services
                 Debug.WriteLine(ex.Message);
                 return false;
             }
-            if(!SetCurrentPageByName("Адреса"))
+            if(SetCurrentPageByName("Адреса") == false)
             { 
                 return false; 
             }
@@ -51,22 +51,20 @@ namespace DeviceTunerNET.Services
 
         public string GetCellValueByIndex(int row, int column)
         {
-            return worksheet.Cells[row, column].Value?.ToString();
+            string value = worksheet.Cells[row, column].Value?.ToString();
+            return value;
         }
 
-        public int GetLastColumnIndex()
+        public void GetLastRowAndColumnIndex()
         {
-            return worksheet.Dimension.Columns;
+            var rows = worksheet.Dimension.Rows;
+            var columns = worksheet.Dimension.Columns;
         }
 
-        public int GetLastRowIndex()
-        {
-            return worksheet.Dimension.Rows;
-        }
-
-        public void Save()
+        public Task SaveAsync()
         {
             package.Save();
+            return Task.CompletedTask;
         }
 
         public void SetCellColor(System.Drawing.Color color, int row, int column)
@@ -84,12 +82,12 @@ namespace DeviceTunerNET.Services
             try
             {
                 worksheet = package.Workbook.Worksheets[pageName];
+                return true;
             }
             catch (Exception ex)
             {
                 return false;
             }
-            return true;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DeviceTunerNET.SharedDataModel;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
@@ -33,6 +34,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// </summary>
         /// <typeparam name="T">Тип прибора</typeparam>
         /// <returns></returns>
+        
         IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : ISimplestComponent;
 
         /// <summary>

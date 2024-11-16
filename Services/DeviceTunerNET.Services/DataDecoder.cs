@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using static System.Int32;
 using DeviceTunerNET.SharedDataModel.Devices;
+using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
@@ -54,7 +55,7 @@ namespace DeviceTunerNET.Services
         //int columns;//number of columns in the sheet
 
         //Dictionary with all found C2000-Ethernet
-        private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = new Dictionary<C2000Ethernet, Tuple<char, int>>();
+        private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = [];
 
         private readonly IDeviceGenerator _devicesGenerator;
 
@@ -69,7 +70,7 @@ namespace DeviceTunerNET.Services
             _devicesGenerator = deviceGenerator;
         }
 
-        public List<Cabinet> GetCabinetsAsync(string excelFileFullPath)
+        public List<Cabinet> GetCabinets(string excelFileFullPath)
         {
             //ExcelInit(excelFileFullPath);
             Driver.SetCurrentDocument(excelFileFullPath);
@@ -195,25 +196,12 @@ namespace DeviceTunerNET.Services
                         continue;
 
                     device.Key.RemoteDevicesList.Add(item.Key);
-                    Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " (" + item.Value.Item2 + ")");
+                    //Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " (" + item.Value.Item2 + ")");
                 }
             }
-            Debug.WriteLine("----------------");
+            //Debug.WriteLine("----------------");
         }
-        /*
-        private void ExcelInit(string filepath)
-        {
-            sourceFile = new FileInfo(filepath);
-            package = new ExcelPackage(sourceFile);
 
-            worksheet = package.Workbook.Worksheets["Адреса"];
-
-            // get number of rows and columns in the sheet
-            rows = worksheet.Dimension.Rows; // 20
-            columns = worksheet.Dimension.Columns; // 7
-
-        }
-        */
         private static ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings)
         {
             if (device is EthernetSwitch ethernetSwitch)
@@ -320,7 +308,7 @@ namespace DeviceTunerNET.Services
         {
             try
             {
-                Driver.Save();
+                Driver.SaveAsync();
             }
             catch
             {

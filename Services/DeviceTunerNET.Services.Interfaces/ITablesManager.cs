@@ -1,4 +1,6 @@
-﻿namespace DeviceTunerNET.Services.Interfaces
+﻿using System.Threading.Tasks;
+
+namespace DeviceTunerNET.Services.Interfaces
 {
     public interface ITablesManager
     {
@@ -8,14 +10,13 @@
         bool SetCurrentDocument(string document);
         bool SetCurrentPageByName(string pageName);
 
-        int GetLastRowIndex();
-        int GetLastColumnIndex();
+        void GetLastRowAndColumnIndex();
 
         string GetCellValueByIndex(int row, int column);
         void SetCellValueByIndex(string cellValue, int row, int column);
 
         void SetCellColor(System.Drawing.Color color, int row, int column);
 
-        void Save();
+        Task SaveAsync();
     }
 }

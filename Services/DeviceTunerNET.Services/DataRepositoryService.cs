@@ -5,6 +5,8 @@ using DryIoc;
 using Prism.Events;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace DeviceTunerNET.Services
 {
@@ -15,7 +17,7 @@ namespace DeviceTunerNET.Services
         private readonly IEventAggregator _ea;
         private readonly IResolverContext _resolver;
         private IDataDecoder _decoder;
-
+        private Dispatcher _dispatcher;
         private int _dataProviderType = 1;
 
         public DataRepositoryService(IEventAggregator ea, IDataDecoder dataDecoder, IResolverContext resolverContext)
@@ -23,6 +25,7 @@ namespace DeviceTunerNET.Services
             _ea = ea;
             _resolver = resolverContext;
             _decoder = dataDecoder;
+            _dispatcher = Dispatcher.CurrentDispatcher;
         }
 
         public void SetDevices(int DataProviderType, string FullPathToData)
@@ -35,18 +38,19 @@ namespace DeviceTunerNET.Services
             {
                 case 1:
                     _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.excelKey);
-                    _cabinetsLst = _decoder.GetCabinetsAsync(_fullPathToData);
+                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData);
                     break;
                 case 2:
                     _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.googleKey);
-                    _cabinetsLst = _decoder.GetCabinetsAsync(_fullPathToData);
+                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData);
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории
-            _ea.GetEvent<MessageSentEvent>().Publish(new Message
+            _dispatcher.BeginInvoke(() => _ea.GetEvent<MessageSentEvent>().Publish(new Message
             {
                 ActionCode = MessageSentEvent.RepositoryUpdated
-            });
+            }));
+            
         }
 
         public bool SaveSerialNumber(int id, string serialNumber)
