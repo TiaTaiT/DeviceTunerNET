@@ -6,6 +6,7 @@ using Prism.Events;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace DeviceTunerNET.Services
@@ -32,7 +33,10 @@ namespace DeviceTunerNET.Services
         {
             _dataProviderType = DataProviderType;
             var _fullPathToData = FullPathToData;
-
+            _dispatcher.BeginInvoke(() =>
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+            });
             _cabinetsLst.Clear();
             switch (_dataProviderType)
             {
@@ -50,7 +54,10 @@ namespace DeviceTunerNET.Services
             {
                 ActionCode = MessageSentEvent.RepositoryUpdated
             }));
-            
+            _dispatcher.BeginInvoke(() =>
+            {
+                Mouse.OverrideCursor = null;
+            });
         }
 
         public bool SaveSerialNumber(int id, string serialNumber)

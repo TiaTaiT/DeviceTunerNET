@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace DeviceTunerNET.ViewModels
 {
@@ -34,6 +35,7 @@ namespace DeviceTunerNET.ViewModels
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly IDialogCaller _dialogCaller;
         private readonly IGoogleDriveSheetsLister _googleDriveSheetsLister;
+        private readonly Dispatcher _dispatcher;
 
         public DelegateCommand OpenFileCommand { get; }
         public DelegateCommand OpenUrlCommand { get; }
@@ -51,6 +53,7 @@ namespace DeviceTunerNET.ViewModels
             _dataRepositoryService = dataRepositoryService;
             _dialogCaller = dialogCaller;
             _googleDriveSheetsLister = googleDriveSheetsLister;
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
             OpenFileCommand = new DelegateCommand(OpenFileExecute, OpenFileCanExecute);
             OpenUrlCommand = new DelegateCommand(async () => await OpenUrlExecute(), OpenUrlCanExecute);
@@ -113,6 +116,7 @@ namespace DeviceTunerNET.ViewModels
                 return;
 
             var selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
+
             // 1 - Поставщик данных - Excel
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
             SpreadsheetId = string.Empty;
