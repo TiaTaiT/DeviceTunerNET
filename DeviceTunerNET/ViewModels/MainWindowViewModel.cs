@@ -115,6 +115,7 @@ namespace DeviceTunerNET.ViewModels
             var selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
             // 1 - Поставщик данных - Excel
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
+            SpreadsheetId = string.Empty;
         }
 
         private async Task GetUrlWithDataAsync()
