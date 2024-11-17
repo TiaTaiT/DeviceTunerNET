@@ -9,8 +9,8 @@ namespace DeviceTunerNET.Services.Interfaces
         ITablesManager Driver { get; set; }
         List<Cabinet> GetCabinets(string ExcelFileFullPath);
         //bool SaveDevice<T>(T arg) where T : SimplestСomponent;
-        bool SaveSerialNumber(int id, string serialNumber);
+        Task<bool> SaveSerialNumberAsync(int id, string serialNumber);
 
-        bool SaveQualityControlPassed(int id, bool qualityControlPassed);
+        Task<bool> SaveQualityControlPassedAsync(int id, bool qualityControlPassed);
     }
 }

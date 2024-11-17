@@ -61,10 +61,18 @@ namespace DeviceTunerNET.Services
             var columns = worksheet.Dimension.Columns;
         }
 
-        public Task SaveAsync()
+        public Task<bool> Save()
         {
-            package.Save();
-            return Task.CompletedTask;
+            try
+            {
+                package.Save();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Saving error: {ex.Message}");
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
         }
 
         public void SetCellColor(System.Drawing.Color color, int row, int column)

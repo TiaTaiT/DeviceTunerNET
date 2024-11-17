@@ -16,7 +16,7 @@ namespace DeviceTunerNET.Services
 {
     public class GoogleTablesDriver : ITablesManager
     {
-        private static readonly string[] Scopes = { SheetsService.Scope.SpreadsheetsReadonly };
+        private static readonly string[] Scopes = { SheetsService.Scope.Spreadsheets };
         private static readonly string ApplicationName = "DeviceTunerNET";
         private readonly SheetsService _sheetsService;
         private readonly IGoogleSpreadsheetCache _spreadsheetCache;
@@ -24,11 +24,6 @@ namespace DeviceTunerNET.Services
         private string _sheetName;
         private const string _credentialsPath = "Resources\\Files\\firm-capsule-441717-e2-2f90d66e4ff2.json";
 
-        public ITablesManager Driver
-        { 
-            get;
-            set;
-        }
         public int Rows { get; set; }
         public int Columns { get; set; }
 
@@ -85,7 +80,7 @@ namespace DeviceTunerNET.Services
             //throw new NotImplementedException();
         }
 
-        public async Task SaveAsync()
+        public async Task<bool> Save()
         {
             // List to store all updated values
             var valueRanges = new List<ValueRange>();
@@ -114,7 +109,7 @@ namespace DeviceTunerNET.Services
 
             // If no changes were detected, exit early
             if (valueRanges.Count == 0)
-                return;
+                return false;
 
             // Batch update the changed values
             var batchUpdateRequest = new BatchUpdateValuesRequest
@@ -122,8 +117,17 @@ namespace DeviceTunerNET.Services
                 ValueInputOption = "RAW", // Use "RAW" to write values as-is
                 Data = valueRanges
             };
-
-            await _sheetsService.Spreadsheets.Values.BatchUpdate(batchUpdateRequest, _spreadsheetId).ExecuteAsync();
+            try
+            {
+                var result = await _sheetsService.Spreadsheets.Values.BatchUpdate(batchUpdateRequest, _spreadsheetId).ExecuteAsync();
+                Debug.WriteLine(result.Responses);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
         }
 
         private string GetColumnName(int columnNumber)

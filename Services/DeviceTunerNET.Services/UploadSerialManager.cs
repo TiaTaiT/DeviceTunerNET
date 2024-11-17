@@ -7,6 +7,7 @@ using System.IO.Ports;
 using System.Net;
 using System.Windows;
 using System.Reflection;
+using System.Threading.Tasks;
 
 
 namespace DeviceTunerNET.Services
@@ -17,13 +18,13 @@ namespace DeviceTunerNET.Services
         private readonly IDataRepositoryService _repositoryService = repositoryService;
         private IPort _port;
 
-        private void SaveSerial(Device device, string serialNumb)
+        private async Task SaveSerialAsync(Device device, string serialNumb)
         {
             device.Serial = serialNumb;
-
-            if (!_repositoryService.SaveSerialNumber(device.Id, device.Serial))
+            var savingResult = await _repositoryService.SaveSerialNumberAsync(device.Id, device.Serial);
+            if (!savingResult)
             {
-                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     Clipboard.SetText(device.Serial ?? string.Empty);
                 }));
@@ -36,7 +37,7 @@ namespace DeviceTunerNET.Services
         public string PortName { get; set; } = string.Empty;
         public Action<int> UpdateProgressBar { get; set; }
 
-        public bool QualityControl(IOrionDevice device)
+        public async Task<bool> QualityControlAsync(IOrionDevice device)
         {
 
             if (!SetPort())
@@ -63,7 +64,7 @@ namespace DeviceTunerNET.Services
                 return false;
             }
 
-            var wasSaved = _repositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
+            var wasSaved = await _repositoryService.SaveQualityControlPassedAsync(device.Id, device.QualityControlPassed);
 
             return device.QualityControlPassed;
         }
@@ -94,7 +95,7 @@ namespace DeviceTunerNET.Services
                        
                     return false;
                 }
-                SaveSerial(orionDevice, serialNumb);
+                SaveSerialAsync(orionDevice, serialNumb);
                 return true;
             }
             

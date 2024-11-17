@@ -60,20 +60,22 @@ namespace DeviceTunerNET.Services
             });
         }
 
-        public bool SaveSerialNumber(int id, string serialNumber)
+        public async Task<bool> SaveSerialNumberAsync(int id, string serialNumber)
         {
+            /*
             if (_dataProviderType != 1)
                 return false;
-
-            return _decoder.SaveSerialNumber(id, serialNumber);
+            */
+            return await _decoder.SaveSerialNumberAsync(id, serialNumber);
         }
 
-        public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
+        public async Task<bool> SaveQualityControlPassedAsync(int id, bool qualityControlPassed)
         {
+            /*
             if (_dataProviderType != 1)
                 return false;
-
-            return _decoder.SaveQualityControlPassed(id, qualityControlPassed);
+            */
+            return await _decoder.SaveQualityControlPassedAsync(id, qualityControlPassed);
         }
 
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()

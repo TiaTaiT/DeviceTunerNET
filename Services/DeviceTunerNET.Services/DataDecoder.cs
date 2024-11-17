@@ -1,12 +1,8 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
-using OfficeOpenXml;
 using System;
 using System.Drawing;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 using static System.Int32;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System.Threading.Tasks;
@@ -58,6 +54,7 @@ namespace DeviceTunerNET.Services
         private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = [];
 
         private readonly IDeviceGenerator _devicesGenerator;
+        private readonly IDialogCaller _dialogCaller;
 
         public ITablesManager Driver
         {
@@ -65,20 +62,50 @@ namespace DeviceTunerNET.Services
             set;
         }
 
-        public DataDecoder(IDeviceGenerator deviceGenerator)
+        public DataDecoder(IDeviceGenerator deviceGenerator, IDialogCaller dialogCaller)
         {
             _devicesGenerator = deviceGenerator;
+            _dialogCaller = dialogCaller;
         }
 
         public List<Cabinet> GetCabinets(string excelFileFullPath)
         {
             //ExcelInit(excelFileFullPath);
             Driver.SetCurrentDocument(excelFileFullPath);
-
+            IPaddressCol = 0;
+            RS485addressCol = 0;
+            RS232addressCol = 0;
+            nameCol = 0;
+            serialCol = 0;
+            modelCol = 0;
+            parentCol = 0;
+            rangCol = 0;
+            qcCol = 0;
+            projectCol = 0;
             //Определяем в каких столбцах находятся обозначения приборов и их адреса
             FindColumnIndexesByHeader();
+            if (IsTableCaptionValid())
+                return GetCabinetContent();
+            return [];
+        }
 
-            return GetCabinetContent();
+        private bool IsTableCaptionValid()
+        {
+            if (IPaddressCol == 0
+                || RS485addressCol == 0
+                || RS232addressCol == 0
+                || nameCol == 0
+                || serialCol == 0
+                || modelCol == 0
+                || parentCol == 0
+                || rangCol == 0
+                || qcCol == 0
+                || projectCol == 0)
+            {
+                _dialogCaller.ShowMessage($"Error! There is no valid caption in the table!");
+                return false;
+            }
+            return true;
         }
 
         private List<Cabinet> GetCabinetContent()
@@ -95,16 +122,16 @@ namespace DeviceTunerNET.Services
                 var deviceDataSet = new DeviceDataSet
                 {
                     Id = rowIndex,
-                    DevProject = DefaultValue(Driver.GetCellValueByIndex(rowIndex, projectCol), lastDevProject), //(worksheet.Cells[rowIndex, projectCol].Value?.ToString()) ?? lastDevProject,
-                    DevCabinet = DefaultValue(Driver.GetCellValueByIndex(rowIndex, parentCol), lastDevCabinet), //(worksheet.Cells[rowIndex, parentCol].Value?.ToString()) ?? lastDevCabinet,
-                    DevName = Driver.GetCellValueByIndex(rowIndex, nameCol),// worksheet.Cells[rowIndex, nameCol].Value?.ToString(),
-                    DevModel = Driver.GetCellValueByIndex(rowIndex, modelCol),// worksheet.Cells[rowIndex, modelCol].Value?.ToString(),
-                    DevIPAddr = Driver.GetCellValueByIndex(rowIndex, IPaddressCol),// worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString(),
-                    DevSerial = Driver.GetCellValueByIndex(rowIndex, serialCol),// worksheet.Cells[rowIndex, serialCol].Value?.ToString(),
-                    DevRang = Driver.GetCellValueByIndex(rowIndex, rangCol),// worksheet.Cells[rowIndex, rangCol].Value?.ToString(),
+                    DevProject = DefaultValue(Driver.GetCellValueByIndex(rowIndex, projectCol), lastDevProject), 
+                    DevCabinet = DefaultValue(Driver.GetCellValueByIndex(rowIndex, parentCol), lastDevCabinet), 
+                    DevName = Driver.GetCellValueByIndex(rowIndex, nameCol),
+                    DevModel = Driver.GetCellValueByIndex(rowIndex, modelCol),
+                    DevIPAddr = Driver.GetCellValueByIndex(rowIndex, IPaddressCol),
+                    DevSerial = Driver.GetCellValueByIndex(rowIndex, serialCol),
+                    DevRang = Driver.GetCellValueByIndex(rowIndex, rangCol),
                     DevRS232Addr = devRS232Addr,
                     DevRS485Addr = devRS485Addr,
-                    DevQcPassed = GetQcStatus(Driver.GetCellValueByIndex(rowIndex, qcCol)/*worksheet.Cells[rowIndex, qcCol].Value?.ToString()*/),
+                    DevQcPassed = GetQcStatus(Driver.GetCellValueByIndex(rowIndex, qcCol)),
                 };
 
                 if (!string.Equals(deviceDataSet.DevCabinet, lastDevCabinet)) // Если новый шкаф - сохранить старый в список шкафов
@@ -279,15 +306,15 @@ namespace DeviceTunerNET.Services
             }
         }
 
-        public bool SaveSerialNumber(int id, string serialNumber)
+        public async Task<bool> SaveSerialNumberAsync(int id, string serialNumber)
         {
             // записываем серийник коммутатора в графу "Серийный номер" напротив номера строки указанного в id
             Driver.SetCellValueByIndex(serialNumber, id, serialCol); // worksheet.Cells[id, serialCol].Value = serialNumber;
 
-            return saveCurrentPackage();
+            return await SaveCurrentPackageAsync();
         }
 
-        public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
+        public async Task<bool> SaveQualityControlPassedAsync(int id, bool qualityControlPassed)
         {
             // записываем метку прохождения прохождения контроля качества в графу "QC" напротив номера строки указанного в id
             if (qualityControlPassed)
@@ -301,20 +328,12 @@ namespace DeviceTunerNET.Services
                 Driver.SetCellValueByIndex(qcDidntPass, id, qcCol); // worksheet.Cells[id, qcCol].Value = qcDidntPass;
             }
 
-            return saveCurrentPackage();
+            return await SaveCurrentPackageAsync();
         }
 
-        private bool saveCurrentPackage()
+        private async Task<bool> SaveCurrentPackageAsync()
         {
-            try
-            {
-                Driver.SaveAsync();
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
+            return await Driver.Save();
         }
 
         private static string DefaultValue(string value, string defaultValue)

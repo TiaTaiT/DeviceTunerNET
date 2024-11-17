@@ -2,15 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
     public interface IUploadSerialManager: IDisposable
     {
-        public string Protocol { get; set; }
-        public string PortName { get; set; }
-        public Action<int> UpdateProgressBar { get; set; }
-        public bool QualityControl(IOrionDevice device);
-        public bool Upload(IOrionDevice device, string serialNumb);
+        string Protocol { get; set; }
+        string PortName { get; set; }
+        Action<int> UpdateProgressBar { get; set; }
+        Task<bool> QualityControlAsync(IOrionDevice device);
+        bool Upload(IOrionDevice device, string serialNumb);
     }
 }

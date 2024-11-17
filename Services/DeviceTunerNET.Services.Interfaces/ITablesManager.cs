@@ -17,6 +17,6 @@ namespace DeviceTunerNET.Services.Interfaces
 
         void SetCellColor(System.Drawing.Color color, int row, int column);
 
-        Task SaveAsync();
+        Task<bool> Save();
     }
 }
