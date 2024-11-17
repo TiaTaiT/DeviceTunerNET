@@ -23,7 +23,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly ISwitchConfigUploader _configUploader;
         private readonly IPrintService _printService;
-
+        private readonly IDialogCaller _dialogCaller;
         private CancellationTokenSource _tokenSource = null;
         private readonly Dispatcher _dispatcher;
 
@@ -31,12 +31,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                                    IDataRepositoryService dataRepositoryService,
                                    ISwitchConfigUploader switchFactory,
                                    IEventAggregator ea,
-                                   IPrintService printService) : base(regionManager)
+                                   IPrintService printService,
+                                   IDialogCaller dialogCaller) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
             _configUploader = switchFactory;
             _printService = printService;
+            _dialogCaller = dialogCaller;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
@@ -101,7 +103,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool CanPrintLabelCommandExecute()
         {
-            if (IsCanDoStart == true && SelectedPrinter != null) 
+            if (/*IsCanDoStart == true && */SelectedPrinter != null) 
             {
                 return true;
             }
@@ -253,14 +255,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 await _dispatcher.BeginInvoke(new Action(() => { 
                     Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty); 
                 })); 
-                MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
+                _dialogCaller.ShowMessage("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
             }
 
             if (AllowPrintLabel)
             {
                 _printService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(completeEthernetSwitch));
             }
-
+            var isQcPassed = await _dataRepositoryService.SaveQualityControlPassedAsync(completeEthernetSwitch.Id, true);
             // Обновляем всю коллекцию в UI целиком
             await _dispatcher.BeginInvoke(new Action(() => { 
                 CollectionViewSource.GetDefaultView(SwitchList).Refresh(); 
