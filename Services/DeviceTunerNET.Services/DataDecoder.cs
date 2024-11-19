@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using static System.Int32;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Appointments.AppointmentsProvider;
 
 namespace DeviceTunerNET.Services
 {
@@ -68,7 +69,7 @@ namespace DeviceTunerNET.Services
             _dialogCaller = dialogCaller;
         }
 
-        public List<Cabinet> GetCabinets(string excelFileFullPath)
+        public IEnumerable<Cabinet> GetCabinets(string excelFileFullPath)
         {
             //ExcelInit(excelFileFullPath);
             Driver.SetCurrentDocument(excelFileFullPath);
@@ -85,8 +86,24 @@ namespace DeviceTunerNET.Services
             //Определяем в каких столбцах находятся обозначения приборов и их адреса
             FindColumnIndexesByHeader();
             if (IsTableCaptionValid())
-                return GetCabinetContent();
+            {
+                var cabinets = GetCabinetContent();
+
+                return GetCabinetsWithoutDashName(cabinets);
+            }
             return [];
+        }
+
+        private IEnumerable<Cabinet> GetCabinetsWithoutDashName(List<Cabinet> cabinets)
+        {
+            foreach(var cabinet in cabinets)
+            {
+                if (cabinet.Designation.Equals("-"))
+                {
+                    continue;
+                }
+                yield return cabinet;
+            }
         }
 
         private bool IsTableCaptionValid()

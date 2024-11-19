@@ -42,11 +42,11 @@ namespace DeviceTunerNET.Services
             {
                 case 1:
                     _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.excelKey);
-                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData);
+                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData).ToList();
                     break;
                 case 2:
                     _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.googleKey);
-                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData);
+                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData).ToList();
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории

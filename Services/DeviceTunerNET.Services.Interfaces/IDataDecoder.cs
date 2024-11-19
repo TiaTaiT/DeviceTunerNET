@@ -7,7 +7,7 @@ namespace DeviceTunerNET.Services.Interfaces
     public interface IDataDecoder
     {
         ITablesManager Driver { get; set; }
-        List<Cabinet> GetCabinets(string ExcelFileFullPath);
+        IEnumerable<Cabinet> GetCabinets(string ExcelFileFullPath);
         //bool SaveDevice<T>(T arg) where T : SimplestСomponent;
         Task<bool> SaveSerialNumberAsync(int id, string serialNumber);
 
