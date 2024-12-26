@@ -57,7 +57,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             { 59, () => new OrionDevice(null) },         //"Рупор исп.02" },
             { 61, () => new OrionDevice(null) },         //"С2000-КДЛ-Modbus" },
             { 66, () => new OrionDevice(null) },         //"Рупор исп.03" },
-            { 67, () => new OrionDevice(null) }          //"Рупор-300" }
+            { 67, () => new OrionDevice(null) },          //"Рупор-300" }
+            { 81, () => new C2000_Kdl2i_isp1(null) }       //"С2000-КДЛ-2И исп.01"
         };
 
         public C2000M(IPort port) : base(port)

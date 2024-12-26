@@ -61,6 +61,7 @@ namespace DeviceTunerNET.Services
             {"С2000-КДЛ-Modbus", () => new OrionDevice(null) },
             {"Рупор исп.03", () => new OrionDevice(null) },
             {"Рупор-300", () => new OrionDevice(null) },
+            {"С2000-КДЛ-2И исп.01", () => new C2000_Kdl2i_isp1(null) },
         };
 
         private readonly Dictionary<string, Func<IEthernetDevice>> _ethernetSwitches = new()
