@@ -6,123 +6,101 @@ using System.Collections.Generic;
 using static System.Int32;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Appointments.AppointmentsProvider;
+using System.Linq;
 
 namespace DeviceTunerNET.Services
 {
-    public class DataDecoder : IDataDecoder
+    public enum TableColumns
     {
-        #region Constants
-        private const char transparent = 'T';
-        private const char master = 'M';
-        private const char slave = 'S';
-        #endregion Constants
+        IPAddress,
+        RS485Address,
+        RS232Address,
+        Name,
+        Serial,
+        Model,
+        Parent,
+        Rang,
+        QC,
+        Project
+    }
 
-        private int IPaddressCol = 0; // Index of the column containing device addresses
-        private int RS485addressCol = 0; // Index of the column containing device addresses
-        private int RS232addressCol = 0; // Index of the column containing device addresses
-        private int nameCol = 0;    // Index of the column containing device names
-        private int serialCol = 0;  // Index of the column containing device serial number
-        private int modelCol = 0;   // Index of the column containing device model
-        private int parentCol = 0;   // Index of the column containing parent cabinet
-        private int CaptionRow = 1; // Table caption row index
-        private int rangCol = 0; // Index of the column containing networkRelationship (master, slave, Transparent)
-        private int qcCol = 0; // Index of the column contaning quality control passed mark
-        private int projectCol = 0; // Project column (Площадка)
+    public enum NetworkMode
+    {
+        Transparent = 'T',
+        Master = 'M',
+        Slave = 'S'
+    }
 
-        private const string ColProjectCaption = "Площадка"; //Заголовок столбца с наименованием проекта
-        private const string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
-        private const string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
-        private const string ColRS232AddressCaption = "RS232"; //Заголовок столбца с адресами RS232
-        private const string ColNamesCaption = "Обозначение"; //Заголовок столбца с обозначениями приборов
-        private const string ColSerialCaption = "Серийный номер"; //Заголовок столбца с обозначениями приборов
-        private const string ColModelCaption = "Модель"; //Заголовок столбца с наименованием модели прибора
-        private const string ColParentCaption = "Шкаф"; //Заголовок столбца с наименованием шкафа в котором находится дивайс
-        private const string ColNetRelationship = "Rang"; //Заголовок столбца с мастерами и слевами C2000-Ethernet
-        private const string ColQualityControl = "QC"; //Заголовок столбца о прохождении шкафом ОТК
-
-        private const string qcPassed = "Passed";
-        private const string qcDidntPass = "Failed!";
-
-
-        //private ExcelPackage package;
-        //private FileInfo sourceFile;
-        //private ExcelWorksheet worksheet;
-        //int rows; // number of rows in the sheet
-        //int columns;//number of columns in the sheet
-
-        //Dictionary with all found C2000-Ethernet
-        private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = [];
-
-        private readonly IDeviceGenerator _devicesGenerator;
-        private readonly IDialogCaller _dialogCaller;
-
-        public ITablesManager Driver
+    public class DataDecoder(IDeviceGenerator deviceGenerator, IDialogCaller dialogCaller) : IDataDecoder
+    {
+        private readonly Dictionary<TableColumns, int> columnIndices = [];
+        private readonly Dictionary<TableColumns, string> columnCaptions = new()
         {
-            get;
-            set;
-        }
+            { TableColumns.Project, "Площадка" },
+            { TableColumns.IPAddress, "IP" },
+            { TableColumns.RS485Address, "RS485" },
+            { TableColumns.RS232Address, "RS232" },
+            { TableColumns.Name, "Обозначение" },
+            { TableColumns.Serial, "Серийный номер" },
+            { TableColumns.Model, "Модель" },
+            { TableColumns.Parent, "Шкаф" },
+            { TableColumns.Rang, "Rang" },
+            { TableColumns.QC, "QC" }
+        };
 
-        public DataDecoder(IDeviceGenerator deviceGenerator, IDialogCaller dialogCaller)
-        {
-            _devicesGenerator = deviceGenerator;
-            _dialogCaller = dialogCaller;
-        }
+        private const int CaptionRow = 1;
+        private const string QcPassed = "Passed";
+        private const string QcDidntPass = "Failed!";
+
+        private readonly Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = [];
+        private readonly IDeviceGenerator _devicesGenerator = deviceGenerator;
+        private readonly IDialogCaller _dialogCaller = dialogCaller;
+
+        public ITablesManager Driver { get; set; }
 
         public IEnumerable<Cabinet> GetCabinets(string excelFileFullPath)
         {
-            //ExcelInit(excelFileFullPath);
             Driver.SetCurrentDocument(excelFileFullPath);
-            IPaddressCol = 0;
-            RS485addressCol = 0;
-            RS232addressCol = 0;
-            nameCol = 0;
-            serialCol = 0;
-            modelCol = 0;
-            parentCol = 0;
-            rangCol = 0;
-            qcCol = 0;
-            projectCol = 0;
-            //Определяем в каких столбцах находятся обозначения приборов и их адреса
+            ResetColumnIndices();
             FindColumnIndexesByHeader();
-            if (IsTableCaptionValid())
-            {
-                var cabinets = GetCabinetContent();
 
-                return GetCabinetsWithoutDashName(cabinets);
+            if (!IsTableCaptionValid())
+            {
+                return [];
             }
-            return [];
+
+            var cabinets = GetCabinetContent();
+            return GetCabinetsWithoutDashName(cabinets);
         }
 
-        private IEnumerable<Cabinet> GetCabinetsWithoutDashName(List<Cabinet> cabinets)
+        private void ResetColumnIndices()
         {
-            foreach(var cabinet in cabinets)
+            columnIndices.Clear();
+            foreach (TableColumns column in Enum.GetValues(typeof(TableColumns)))
             {
-                if (cabinet.Designation.Equals("-"))
+                columnIndices[column] = 0;
+            }
+        }
+
+        private static IEnumerable<Cabinet> GetCabinetsWithoutDashName(List<Cabinet> cabinets)
+        {
+            foreach (var cabinet in cabinets)
+            {
+                if (!cabinet.Designation.Equals("-"))
                 {
-                    continue;
+                    yield return cabinet;
                 }
-                yield return cabinet;
             }
         }
 
         private bool IsTableCaptionValid()
         {
-            if (IPaddressCol == 0
-                || RS485addressCol == 0
-                || RS232addressCol == 0
-                || nameCol == 0
-                || serialCol == 0
-                || modelCol == 0
-                || parentCol == 0
-                || rangCol == 0
-                || qcCol == 0
-                || projectCol == 0)
+            var isValid = columnIndices.Values.All(index => index != 0);
+            if (!isValid)
             {
-                _dialogCaller.ShowMessage($"Error! There is no valid caption in the table!");
-                return false;
+                _dialogCaller.ShowMessage("Error! There is no valid caption in the table!");
             }
-            return true;
+            return isValid;
         }
 
         private List<Cabinet> GetCabinetContent()
@@ -131,218 +109,223 @@ namespace DeviceTunerNET.Services
             var cabinet = new Cabinet();
             var lastDevCabinet = "";
             var lastDevProject = "";
+
             for (var rowIndex = CaptionRow + 1; rowIndex <= Driver.Rows; rowIndex++)
             {
-                TryParse(Driver.GetCellValueByIndex(rowIndex, RS232addressCol), out int devRS232Addr);
-                TryParse(Driver.GetCellValueByIndex(rowIndex, RS485addressCol), out int devRS485Addr);
+                var deviceDataSet = CreateDeviceDataSet(rowIndex, lastDevProject, lastDevCabinet);
 
-                var deviceDataSet = new DeviceDataSet
+                if (!string.Equals(deviceDataSet.DevCabinet, lastDevCabinet))
                 {
-                    Id = rowIndex,
-                    DevProject = DefaultValue(Driver.GetCellValueByIndex(rowIndex, projectCol), lastDevProject), 
-                    DevCabinet = DefaultValue(Driver.GetCellValueByIndex(rowIndex, parentCol), lastDevCabinet), 
-                    DevName = Driver.GetCellValueByIndex(rowIndex, nameCol),
-                    DevModel = Driver.GetCellValueByIndex(rowIndex, modelCol),
-                    DevIPAddr = Driver.GetCellValueByIndex(rowIndex, IPaddressCol),
-                    DevSerial = Driver.GetCellValueByIndex(rowIndex, serialCol),
-                    DevRang = Driver.GetCellValueByIndex(rowIndex, rangCol),
-                    DevRS232Addr = devRS232Addr,
-                    DevRS485Addr = devRS485Addr,
-                    DevQcPassed = GetQcStatus(Driver.GetCellValueByIndex(rowIndex, qcCol)),
-                };
-
-                if (!string.Equals(deviceDataSet.DevCabinet, lastDevCabinet)) // Если новый шкаф - сохранить старый в список шкафов
-                {
-                    if (rowIndex != CaptionRow + 1) 
-                        cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
-                    
-                    cabinet = new Cabinet
+                    if (rowIndex != CaptionRow + 1)
                     {
-                        Id = rowIndex,
-                        Designation = deviceDataSet.DevCabinet,
-                        ParentName = deviceDataSet.DevProject,
-                    };
-                }
-
-                if(_devicesGenerator.TryGetDevice(deviceDataSet.DevModel, out var device))
-                {
-                    var deviceWithSettings = GetDeviceWithSettings(device, deviceDataSet);
-                    deviceWithSettings.Cabinet = cabinet.Designation;
-                    
-                    if(device is C2000Ethernet c2000Ethernet)
-                    {
-                        //Add to dict for master/slave/translate sort
-                        dictC2000Ethernet.Add(c2000Ethernet, GetRangTuple(deviceDataSet.DevRang));
+                        cabinetsLst.Add(cabinet);
                     }
-                    
-                    cabinet.AddItem(deviceWithSettings);
+
+                    cabinet = CreateNewCabinet(rowIndex, deviceDataSet);
                 }
-                               
-                if (rowIndex == Driver.Rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
+
+                ProcessDevice(deviceDataSet, cabinet);
+
+                if (rowIndex == Driver.Rows)
                 {
                     cabinetsLst.Add(cabinet);
                 }
+
                 lastDevCabinet = deviceDataSet.DevCabinet;
                 lastDevProject = deviceDataSet.DevProject;
             }
-            FillDevicesDependencies(dictC2000Ethernet, master, slave);
-            FillDevicesDependencies(dictC2000Ethernet, slave, master);
+
+            ProcessC2000EthernetDependencies();
             return cabinetsLst;
+        }
+
+        private DeviceDataSet CreateDeviceDataSet(int rowIndex, string lastDevProject, string lastDevCabinet)
+        {
+            TryParse(Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.RS232Address]), out int devRS232Addr);
+            TryParse(Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.RS485Address]), out int devRS485Addr);
+
+            return new DeviceDataSet
+            {
+                Id = rowIndex,
+                DevProject = DefaultValue(Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.Project]), lastDevProject),
+                DevCabinet = DefaultValue(Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.Parent]), lastDevCabinet),
+                DevName = Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.Name]),
+                DevModel = Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.Model]),
+                DevIPAddr = Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.IPAddress]),
+                DevSerial = Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.Serial]),
+                DevRang = Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.Rang]),
+                DevRS232Addr = devRS232Addr,
+                DevRS485Addr = devRS485Addr,
+                DevQcPassed = GetQcStatus(Driver.GetCellValueByIndex(rowIndex, columnIndices[TableColumns.QC]))
+            };
+        }
+
+        private static Cabinet CreateNewCabinet(int rowIndex, DeviceDataSet deviceDataSet)
+        {
+            return new Cabinet
+            {
+                Id = rowIndex,
+                Designation = deviceDataSet.DevCabinet,
+                ParentName = deviceDataSet.DevProject
+            };
+        }
+
+        private void ProcessDevice(DeviceDataSet deviceDataSet, Cabinet cabinet)
+        {
+            if (_devicesGenerator.TryGetDevice(deviceDataSet.DevModel, out var device))
+            {
+                var deviceWithSettings = GetDeviceWithSettings(device, deviceDataSet);
+                deviceWithSettings.Cabinet = cabinet.Designation;
+
+                if (device is C2000Ethernet c2000Ethernet)
+                {
+                    dictC2000Ethernet.Add(c2000Ethernet, GetRangTuple(deviceDataSet.DevRang));
+                }
+
+                cabinet.AddItem(deviceWithSettings);
+            }
+        }
+
+        private void ProcessC2000EthernetDependencies()
+        {
+            FillDevicesDependencies(dictC2000Ethernet, (char)NetworkMode.Master, (char)NetworkMode.Slave);
+            FillDevicesDependencies(dictC2000Ethernet, (char)NetworkMode.Slave, (char)NetworkMode.Master);
         }
 
         private bool GetQcStatus(string qcStatus)
         {
-            if(qcStatus != null && qcStatus.Equals(qcPassed))
-            {
-                return true;
-            }
-            return false;
+            return qcStatus != null && qcStatus.Equals(QcPassed);
         }
 
-        private Tuple<char, int> GetRangTuple(string rang)
+        private static Tuple<char, int> GetRangTuple(string rang)
         {
-            var _rang = rang[0];
-            var lineStr = rang.Substring(1); //right part of rang
-
-            if (_rang != master && _rang != slave && _rang != transparent)
+            if (string.IsNullOrEmpty(rang) || rang.Length < 2)
+            {
                 return null;
+            }
+
+            var mode = rang[0];
+            var lineStr = rang[1..];
+
+            if (!Enum.GetValues<NetworkMode>().Any(m => (char)m == mode))
+            {
+                return null;
+            }
 
             if (!TryParse(lineStr, out var lineNumb))
+            {
                 return null;
+            }
 
-            return new Tuple<char, int>(_rang, lineNumb);
+            return new Tuple<char, int>(mode, lineNumb);
         }
 
-        // связываем все C2000-Ethernet в общую сеть, добавляя ссылки мастеров на слейв и прописывая мастеров в слейвы
-        private void FillDevicesDependencies(Dictionary<C2000Ethernet, Tuple<char, int>> ethDevices, char dep1, char dep2)
+        private static void FillDevicesDependencies(Dictionary<C2000Ethernet, Tuple<char, int>> ethDevices, char dep1, char dep2)
         {
             foreach (var device in ethDevices)
             {
-                switch (device.Value.Item1)
-                {
-                    case transparent:
-                        device.Key.NetworkMode = C2000Ethernet.Mode.transparent; // Transparent
-                        break;
-                    case master:
-                        device.Key.NetworkMode = C2000Ethernet.Mode.master; // master
-                        break;
-                    case slave:
-                        device.Key.NetworkMode = C2000Ethernet.Mode.slave; // slave
-                        break;
-                }
+                SetDeviceNetworkMode(device.Key, device.Value.Item1);
 
                 if (device.Value.Item1 != dep1)
-                    continue;
-
-                foreach (var item in ethDevices)
                 {
-                    if (item.Value.Item1 != dep2 || device.Value.Item2 != item.Value.Item2)
-                        continue;
+                    continue;
+                }
 
+                foreach (var item in ethDevices.Where(x =>
+                    x.Value.Item1 == dep2 && device.Value.Item2 == x.Value.Item2))
+                {
                     device.Key.RemoteDevicesList.Add(item.Key);
-                    //Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " (" + item.Value.Item2 + ")");
                 }
             }
-            //Debug.WriteLine("----------------");
         }
 
-        private static ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings)
+        private static void SetDeviceNetworkMode(C2000Ethernet device, char mode)
         {
-            if (device is EthernetSwitch ethernetSwitch)
+            device.NetworkMode = mode switch
             {
-                FillEthernetSwitchSettings(settings, ethernetSwitch);
-
-                return ethernetSwitch;
-            }
-
-            if (device is C2000Ethernet C2000Ethernet)
-            {
-                FillC2000EthernetSettings(settings, C2000Ethernet);
-
-                return C2000Ethernet;
-            }
-
-            if (device is RS485device rS485Device)
-            {
-                device = FillRS485Settings(rS485Device, settings);
-            }
-
-            return device;
+                (char)NetworkMode.Transparent => C2000Ethernet.Mode.transparent,
+                (char)NetworkMode.Master => C2000Ethernet.Mode.master,
+                (char)NetworkMode.Slave => C2000Ethernet.Mode.slave,
+                _ => throw new ArgumentException($"Invalid network mode: {mode}")
+            };
         }
 
-        private static ICommunicationDevice FillRS485Settings(RS485device device, DeviceDataSet settings)
+        private static ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings) =>
+            device switch
+            {
+                EthernetSwitch ethernetSwitch => FillEthernetSwitchSettings(settings, ethernetSwitch),
+                C2000Ethernet c2000Ethernet => FillC2000EthernetSettings(settings, c2000Ethernet),
+                RS485device rs485Device => FillRS485Settings(rs485Device, settings),
+                _ => device
+            };
+
+        private static ICommunicationDevice FillCommonDeviceSettings(ICommunicationDevice device, DeviceDataSet settings)
         {
             device.Id = settings.Id;
             device.Designation = settings.DevName;
             device.Model = settings.DevModel;
             device.Serial = settings.DevSerial;
-            device.AddressRS485 = (uint)settings.DevRS485Addr;
             device.QualityControlPassed = settings.DevQcPassed;
             return device;
         }
 
-        private static void FillC2000EthernetSettings(DeviceDataSet settings, C2000Ethernet C2000Ethernet)
+        private static RS485device FillRS485Settings(RS485device device, DeviceDataSet settings)
         {
-            C2000Ethernet.Id = settings.Id;
-            C2000Ethernet.Designation = settings.DevName;
-            C2000Ethernet.Model = settings.DevModel;
-            C2000Ethernet.Serial = settings.DevSerial;
-            C2000Ethernet.AddressRS485 = (uint)settings.DevRS485Addr;
-            C2000Ethernet.AddressRS232 = settings.DevRS232Addr;
-            C2000Ethernet.AddressIP = settings.DevIPAddr;
-            C2000Ethernet.NetName = settings.DevName;
-            C2000Ethernet.QualityControlPassed = settings.DevQcPassed;
+            FillCommonDeviceSettings(device, settings);
+            device.AddressRS485 = (uint)settings.DevRS485Addr;
+            return device;
         }
 
-        private static void FillEthernetSwitchSettings(DeviceDataSet settings, EthernetSwitch ethernetSwitch)
+        private static C2000Ethernet FillC2000EthernetSettings(DeviceDataSet settings, C2000Ethernet device)
         {
-            ethernetSwitch.Id = settings.Id;
-            ethernetSwitch.Designation = settings.DevName;
-            ethernetSwitch.Model = settings.DevModel;
-            ethernetSwitch.Serial = settings.DevSerial;
-            ethernetSwitch.AddressIP = settings.DevIPAddr;
-            ethernetSwitch.QualityControlPassed = settings.DevQcPassed;
+            FillCommonDeviceSettings(device, settings);
+            device.AddressRS485 = (uint)settings.DevRS485Addr;
+            device.AddressRS232 = settings.DevRS232Addr;
+            device.AddressIP = settings.DevIPAddr;
+            device.NetName = settings.DevName;
+            return device;
+        }
+
+        private static EthernetSwitch FillEthernetSwitchSettings(DeviceDataSet settings, EthernetSwitch device)
+        {
+            FillCommonDeviceSettings(device, settings);
+            device.AddressIP = settings.DevIPAddr;
+            return device;
         }
 
         private void FindColumnIndexesByHeader()
         {
             for (var colIndex = 1; colIndex <= Driver.Columns; colIndex++)
             {
-                var content = Driver.GetCellValueByIndex(CaptionRow, colIndex);// worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
-
-                if (content == ColNamesCaption) { nameCol = colIndex; }
-                if (content == ColIPAddressCaption) { IPaddressCol = colIndex; }
-                if (content == ColRS485AddressCaption) { RS485addressCol = colIndex; }
-                if (content == ColRS232AddressCaption) { RS232addressCol = colIndex; }
-                if (content == ColSerialCaption) { serialCol = colIndex; }
-                if (content == ColModelCaption) { modelCol = colIndex; }
-                if (content == ColParentCaption) { parentCol = colIndex; }
-                if (content == ColNetRelationship) { rangCol = colIndex; }
-                if (content == ColQualityControl) { qcCol = colIndex; }
-                if (content == ColProjectCaption) { projectCol = colIndex; }
+                var content = Driver.GetCellValueByIndex(CaptionRow, colIndex);
+                foreach (var caption in columnCaptions)
+                {
+                    if (content == caption.Value)
+                    {
+                        columnIndices[caption.Key] = colIndex;
+                    }
+                }
             }
         }
 
         public async Task<bool> SaveSerialNumberAsync(int id, string serialNumber)
         {
-            // записываем серийник коммутатора в графу "Серийный номер" напротив номера строки указанного в id
-            Driver.SetCellValueByIndex(serialNumber, id, serialCol); // worksheet.Cells[id, serialCol].Value = serialNumber;
-
+            Driver.SetCellValueByIndex(serialNumber, id, columnIndices[TableColumns.Serial]);
             return await SaveCurrentPackageAsync();
         }
 
         public async Task<bool> SaveQualityControlPassedAsync(int id, bool qualityControlPassed)
         {
-            // записываем метку прохождения прохождения контроля качества в графу "QC" напротив номера строки указанного в id
+            var qcColumnIndex = columnIndices[TableColumns.QC];
             if (qualityControlPassed)
             {
-                Driver.SetCellColor(Color.Black, id, qcCol); // worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Black);
-                Driver.SetCellValueByIndex(qcPassed, id, qcCol); // worksheet.Cells[id, qcCol].Value = qcPassed;
+                Driver.SetCellColor(Color.Black, id, qcColumnIndex);
+                Driver.SetCellValueByIndex(QcPassed, id, qcColumnIndex);
             }
             else
             {
-                Driver.SetCellColor(Color.Red, id, qcCol); // worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Red);
-                Driver.SetCellValueByIndex(qcDidntPass, id, qcCol); // worksheet.Cells[id, qcCol].Value = qcDidntPass;
+                Driver.SetCellColor(Color.Red, id, qcColumnIndex);
+                Driver.SetCellValueByIndex(QcDidntPass, id, qcColumnIndex);
             }
 
             return await SaveCurrentPackageAsync();
@@ -358,7 +341,7 @@ namespace DeviceTunerNET.Services
             return string.IsNullOrEmpty(value) ? defaultValue : value;
         }
     }
-    
+
     internal class DeviceDataSet
     {
         internal int Id { get; set; }
