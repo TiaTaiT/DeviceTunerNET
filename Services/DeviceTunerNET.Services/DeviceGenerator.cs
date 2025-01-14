@@ -9,7 +9,9 @@ namespace DeviceTunerNET.Services
 {
     public class DeviceGenerator : IDeviceGenerator
     {
-        private readonly Dictionary<string, Func<IOrionDevice>> _orionDevices= new()
+        private static readonly StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+
+        private readonly Dictionary<string, Func<IOrionDevice>> _orionDevices= new(comparer)
         {
             {"С2000М", () => new C2000M(null)},                             
             {"Сигнал-20", () => new Signal20(null) },                        
@@ -64,7 +66,7 @@ namespace DeviceTunerNET.Services
             {"С2000-КДЛ-2И исп.01", () => new C2000_Kdl2i_isp1(null) },
         };
 
-        private readonly Dictionary<string, Func<IEthernetDevice>> _ethernetSwitches = new()
+        private readonly Dictionary<string, Func<IEthernetDevice>> _ethernetSwitches = new(comparer)
         {
             {"MES3508", () => new EthernetSwitch(null) },
             {"MES3508P", () => new EthernetSwitch(null) },
@@ -91,15 +93,15 @@ namespace DeviceTunerNET.Services
         public bool TryGetDevice(string name, out ICommunicationDevice device)
         {
             device = default;
-            if (_ethernetSwitches.ContainsKey(name))
+            if (_ethernetSwitches.TryGetValue(name, out Func<IEthernetDevice> ethernetDevice))
             {
-                device = _ethernetSwitches[name]();
+                device = ethernetDevice();
                 return true;
             }
 
-            if (_orionDevices.ContainsKey(name))
+            if (_orionDevices.TryGetValue(name, out Func<IOrionDevice> orionDevice))
             {
-                device = _orionDevices[name]();
+                device = orionDevice();
 
                 return true;
             }

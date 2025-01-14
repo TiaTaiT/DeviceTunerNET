@@ -1,5 +1,6 @@
 ﻿using DeviceTunerNET.SharedDataModel;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
@@ -33,6 +34,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// </summary>
         /// <typeparam name="T">Тип прибора</typeparam>
         /// <returns></returns>
+        
         IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : ISimplestComponent;
 
         /// <summary>
@@ -73,7 +75,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="id">Id прибора</param>
         /// <param name="serialNumber">Серийный номер прибора</param>
         /// <returns>true - есди запись удалась, false - в противном случае</returns>
-        bool SaveSerialNumber(int id, string serialNumber);
+        Task<bool> SaveSerialNumberAsync(int id, string serialNumber);
 
         /// <summary>
         /// Записать метку о прохождении контроля качества смонтированным в шкафу прибором в таблицу Excel или базу данных
@@ -81,6 +83,6 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="id">Id прибора</param>
         /// <param name="qualityControlPassed">Метка о прохождении контроля качества</param>
         /// <returns></returns>
-        bool SaveQualityControlPassed(int id, bool qualityControlPassed);
+        Task<bool> SaveQualityControlPassedAsync(int id, bool qualityControlPassed);
     }
 }

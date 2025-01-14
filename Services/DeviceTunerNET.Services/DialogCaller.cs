@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
+using DeviceTunerNET.SharedModels;
 using Prism.Dialogs;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,15 @@ namespace DeviceTunerNET.Services
                 };
         }
 
+        private static DialogParameters GetUrlDialogParams(IEnumerable<UrlItem> historyUrls)
+        {
+            return new DialogParameters
+                {
+                    {"title", "Open URL"},
+                    {"historyUrls", historyUrls},
+                };
+        }
+
         public string GetSerialNumber(string model, string designation)
         {
             var manualReset = new ManualResetEvent(false);
@@ -46,6 +56,28 @@ namespace DeviceTunerNET.Services
             }));
             manualReset.WaitOne();
             return serialNumber;
+        }
+
+        public string GetUrl(IEnumerable<UrlItem> historyUrls)
+        {
+            var manualReset = new ManualResetEvent(false);
+            string url = string.Empty;
+            var result = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var parameters = GetUrlDialogParams(historyUrls);
+
+                _dialogService.ShowDialog("OpenUrlDialog", parameters, dialogResult =>
+                {
+                    if (dialogResult.Result == ButtonResult.OK
+                        && dialogResult.Parameters.ContainsKey("urlPath"))
+                    {
+                        url = dialogResult.Parameters.GetValue<string>("urlPath");
+                    }
+                    manualReset.Set();
+                });
+            }));
+            manualReset.WaitOne();
+            return url;
         }
 
         public void ShowMessage(string message)

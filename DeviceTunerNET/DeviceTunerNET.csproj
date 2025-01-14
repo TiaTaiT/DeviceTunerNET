@@ -50,5 +50,6 @@
     <ProjectReference Include="..\Services\DeviceTunerNET.Services.Interfaces\DeviceTunerNET.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Services\DeviceTunerNET.Services\DeviceTunerNET.Services.csproj" />
     <ProjectReference Include="..\SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj" />
+    <ProjectReference Include="..\SharedModels\DeviceTunerNET.SharedModels.csproj" />
   </ItemGroup>
 </Project>

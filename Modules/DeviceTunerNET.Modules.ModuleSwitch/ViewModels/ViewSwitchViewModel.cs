@@ -23,7 +23,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly ISwitchConfigUploader _configUploader;
         private readonly IPrintService _printService;
-
+        private readonly IDialogCaller _dialogCaller;
         private CancellationTokenSource _tokenSource = null;
         private readonly Dispatcher _dispatcher;
 
@@ -31,12 +31,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                                    IDataRepositoryService dataRepositoryService,
                                    ISwitchConfigUploader switchFactory,
                                    IEventAggregator ea,
-                                   IPrintService printService) : base(regionManager)
+                                   IPrintService printService,
+                                   IDialogCaller dialogCaller) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
             _configUploader = switchFactory;
             _printService = printService;
+            _dialogCaller = dialogCaller;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
@@ -96,12 +98,12 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         {
             _tokenSource = new CancellationTokenSource();
             var token = _tokenSource.Token;
-            return Task.Run(() => DownloadLoop(token), token);
+            return Task.Run(() => DownloadLoopAsync(token), token);
         }
 
         private bool CanPrintLabelCommandExecute()
         {
-            if (IsCanDoStart == true && SelectedPrinter != null) 
+            if (/*IsCanDoStart == true && */SelectedPrinter != null) 
             {
                 return true;
             }
@@ -194,7 +196,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         #endregion
 
         // Основной цикл - заливка в каждый коммутатор настроек из списка SwitchList
-        private void DownloadLoop(CancellationToken token)
+        private async Task DownloadLoopAsync(CancellationToken token)
         {
             if (IsCheckedByCabinets)
             {
@@ -205,7 +207,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                 if (ethernetSwitch?.Serial == null)
                 {
-                    if (Download(token, ethernetSwitch))
+                    if (await DownloadAsync(token, ethernetSwitch))
                     {
                     }
                 }
@@ -221,7 +223,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                     if (ethernetSwitch.Serial == null)
                     {
-                        if (Download(token, ethernetSwitch)) break;
+                        if (await DownloadAsync(token, ethernetSwitch)) break;
                     }
                     if (token.IsCancellationRequested)
                     {
@@ -234,7 +236,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             SliderIsChecked = false; // Всё! Залили настройки во все коммутаторы. Вырубаем слайдер (пололжение Off)
         }
 
-        private bool Download(CancellationToken token, EthernetSwitch ethernetSwitch)
+        private async Task<bool> DownloadAsync(CancellationToken token, EthernetSwitch ethernetSwitch)
         {
             CurrentItemTextBox = ethernetSwitch.AddressIP; // Вывод адреса коммутатора в UI
             ethernetSwitch.CIDR = IPMask;
@@ -244,23 +246,27 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             if (completeEthernetSwitch == null)
             {
                 // Выводим сообщение о прерывании операции
-                _dispatcher.BeginInvoke(new Action(() => { MessageForUser = "Operation aborted!"; }));
+                await _dispatcher.BeginInvoke(new Action(() => { MessageForUser = "Operation aborted!"; }));
                 return true;
             }
-
-            if (!_dataRepositoryService.SaveSerialNumber(completeEthernetSwitch.Id, completeEthernetSwitch.Serial))
+            var savingResult = await _dataRepositoryService.SaveSerialNumberAsync(completeEthernetSwitch.Id, completeEthernetSwitch.Serial);
+            if (!savingResult)
             {
-                _dispatcher.BeginInvoke(new Action(() => { Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty); })); 
-                MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
+                await _dispatcher.BeginInvoke(new Action(() => { 
+                    Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty); 
+                })); 
+                _dialogCaller.ShowMessage("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
             }
 
             if (AllowPrintLabel)
             {
                 _printService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(completeEthernetSwitch));
             }
-
+            var isQcPassed = await _dataRepositoryService.SaveQualityControlPassedAsync(completeEthernetSwitch.Id, true);
             // Обновляем всю коллекцию в UI целиком
-            _dispatcher.BeginInvoke(new Action(() => { CollectionViewSource.GetDefaultView(SwitchList).Refresh(); }));
+            await _dispatcher.BeginInvoke(new Action(() => { 
+                CollectionViewSource.GetDefaultView(SwitchList).Refresh(); 
+            }));
             return false;
         }
 

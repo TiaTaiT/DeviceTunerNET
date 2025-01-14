@@ -20,6 +20,7 @@ using DeviceTunerNET.Modules.ModulePnr;
 using Serilog;
 using System.Linq;
 using System.Threading.Tasks;
+using Prism.Container.DryIoc;
 
 namespace DeviceTunerNET
 {
@@ -31,7 +32,6 @@ namespace DeviceTunerNET
         private IEventAggregator _ea;
         private SerialPort _sp;
 
-        enum SrvKey { telnetKey, sshKey };
         protected override Window CreateShell()
         {
             _sp = new SerialPort();
@@ -80,30 +80,38 @@ namespace DeviceTunerNET
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<IAuthLoader, AuthLoader>();
-            containerRegistry.RegisterSingleton<IMessageService, MessageService>();
-            containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
-            
-            containerRegistry.Register<IFileDialogService, FileDialogService>();
-            containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
-            containerRegistry.Register<IPrintService, DymoModule>();
-            containerRegistry.Register<ISwitchConfigUploader, Eltex>();
-            containerRegistry.Register<ISerialSender, SerialSender>();
-            containerRegistry.Register<ISerialTasks, SerialTasks>();
-            containerRegistry.Register<INetworkUtils, NetworkUtils>();
-            containerRegistry.Register<IDeviceGenerator, DeviceGenerator>();
-            containerRegistry.Register<IDeviceSearcher, BolidDeviceSearcher>();
-            containerRegistry.Register<IAddressChanger, BolidAddressChanger>();
-            containerRegistry.Register<IDialogCaller, DialogCaller>();
-            containerRegistry.Register<IUploadSerialManager, UploadSerialManager>();
+            var container = containerRegistry.GetContainer();
 
-            containerRegistry.Register<ISender, EltexTelnet>(/*serviceKey: SrvKey.telnetKey*/);
-            containerRegistry.Register<ISender, EltexSsh>(/*serviceKey: SrvKey.sshKey*/);
+            container.Register<IAuthLoader, AuthLoader>(Reuse.Singleton);
+            container.Register<IMessageService, MessageService>(Reuse.Singleton);
+            container.Register<IDataRepositoryService, DataRepositoryService>(Reuse.Singleton);
 
-            containerRegistry.Register<ITftpServerManager, TftpServerManager>();
-            containerRegistry.Register<IConfigParser, ConfigParser>();
-            
+            container.Register<IFileDialogService, FileDialogService>(Reuse.Transient);
+            container.Register<IDataDecoder, DataDecoder>(Reuse.Transient);
+            container.Register<IPrintService, DymoModule>(Reuse.Transient);
+            container.Register<ISwitchConfigUploader, Eltex>(Reuse.Transient);
+            container.Register<ISerialSender, SerialSender>(Reuse.Transient);
+            container.Register<ISerialTasks, SerialTasks>(Reuse.Transient);
+            container.Register<INetworkUtils, NetworkUtils>(Reuse.Transient);
+            container.Register<IDeviceGenerator, DeviceGenerator>(Reuse.Transient);
+            container.Register<IDeviceSearcher, BolidDeviceSearcher>(Reuse.Transient);
+            container.Register<IAddressChanger, BolidAddressChanger>(Reuse.Transient);
+            container.Register<IDialogCaller, DialogCaller>(Reuse.Transient);
+            container.Register<IUploadSerialManager, UploadSerialManager>(Reuse.Transient);
+            container.Register<ITftpServerManager, TftpServerManager>(Reuse.Transient);
+            container.Register<IConfigParser, ConfigParser>(Reuse.Transient);
+            container.Register<IGoogleDriveSheetsLister, GoogleDriveSheetsLister>(Reuse.Transient);
+            container.Register<IGoogleSpreadsheetCache, GoogleSpreadsheetCache>(Reuse.Transient);
+
+
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
+            containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
+
+            container.Register<ITablesManager, ExcelDriver>(serviceKey: DataSrvKey.excelKey);
+            container.Register<ITablesManager, GoogleTablesDriver>(serviceKey: DataSrvKey.googleKey);
+
+            container.Register<ISender, EltexTelnet>(serviceKey: SenderSrvKey.telnetKey);
+            container.Register<ISender, EltexSsh>(serviceKey: SenderSrvKey.sshKey);
         }
 
         protected override async void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

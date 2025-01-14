@@ -11,10 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Threading;
 using DeviceTunerNET.SharedDataModel.Devices;
-using System.IO.Ports;
-using DeviceTunerNET.SharedDataModel.Ports;
 using Prism.Navigation.Regions;
-
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -115,7 +112,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private Task CheckCommandExecuteAsync()
         {
-            return Task.Run(VerificationCabinetsLoop);
+            return Task.Run(VerificationCabinetsLoopAsync);
         }
 
         private bool StartCommandCanExecute()
@@ -148,10 +145,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             SearchProgressBar = 1;
 
-            return Task.Run(VerificationCabinetsLoop);
+            return Task.Run(VerificationCabinetsLoopAsync);
         }
 
-        private void VerificationCabinetsLoop()
+        private async Task VerificationCabinetsLoopAsync()
         {
             // Если кол-во приборов с адресом по умолчанию (определяется по наличию серийника) более одного - их уже не настроить без демонтажа
             var numberOfDeviceWithoutSerial = GetNumberOfDeviceWithoutSerial(DevicesForProgramming);
@@ -184,10 +181,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             // Провести контроль качества всех приборов с серийниками и если какой-то прибор отсутсвует
             // вывести предупреждение об этом
             var devsWithSerial = GetDevicesWithSerial(DevicesForProgramming);
-            var passedQcNumb = QualityControl(devsWithSerial);
+            var passedQcNumb = await QualityControlAsync(devsWithSerial);
 
             // Обновляем всю коллекцию в UI целиком
-            _dispatcher.BeginInvoke(new Action(() =>
+            await _dispatcher.BeginInvoke(new Action(() =>
             {
                 CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
             }));
@@ -208,7 +205,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 Upload(device, serial);
 
                 // Обновляем всю коллекцию в UI целиком
-                _dispatcher.BeginInvoke(new Action(() =>
+                await _dispatcher.BeginInvoke(new Action(() =>
                 {
                     CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                 }));
@@ -219,10 +216,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     return;
                 }
 
-                var passedQc = QualityControl([device]);
+                var passedQc = await QualityControlAsync([device]);
             }
 
-            _dispatcher.BeginInvoke(new Action(() =>
+            await _dispatcher.BeginInvoke(new Action(() =>
             {
                 CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
             }));
@@ -240,20 +237,20 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = true;// unlock start button
         }
 
-        private int QualityControl(IEnumerable<IOrionDevice> devices)
+        private async Task<int> QualityControlAsync(IEnumerable<IOrionDevice> devices)
         {
             var deviceCounter = 0;
 
             foreach (var device in devices)
             {
                 SetupUploadManager();
-                if (_uploadManager.QualityControl(device))
+                if (await _uploadManager.QualityControlAsync(device))
                 {
                     deviceCounter++;
                 }
 
                 // Обновляем всю коллекцию в UI целиком
-                _dispatcher.BeginInvoke(new Action(() =>
+                await _dispatcher.BeginInvoke(new Action(() =>
                 {
                     CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                 }));

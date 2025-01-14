@@ -22,11 +22,16 @@
                         <ToolTip>Open a file.</ToolTip>
                     </MenuItem.ToolTip>
                 </MenuItem>
+                <MenuItem Header="_Open URL" Command="{Binding OpenUrlCommand}" IsCheckable="False">
+                    <MenuItem.ToolTip>
+                        <ToolTip>Open URL.</ToolTip>
+                    </MenuItem.ToolTip>
+                </MenuItem>
                 <MenuItem Header="_Save" Command="{Binding SaveFileCommand}" IsCheckable="False" />
                 <MenuItem Header="_Close" Command="{Binding CloseAppCommand}" IsCheckable="False" />
             </MenuItem>
             <MenuItem Header="_Options">
-                <MenuItem Header="_Printers" Command="{Binding OpenFileCommand}" IsCheckable="False">
+                <MenuItem Header="_Open in browser" Command="{Binding OpenUrlInBrowserCommand}" IsCheckable="False">
                     <MenuItem.ToolTip>
                         <ToolTip>Open a file.</ToolTip>
                     </MenuItem.ToolTip>

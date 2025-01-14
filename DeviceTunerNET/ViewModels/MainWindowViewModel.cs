@@ -1,13 +1,30 @@
-﻿using DeviceTunerNET.Services.Interfaces;
+﻿using DeviceTunerNET.Services;
+using DeviceTunerNET.Services.Interfaces;
+using DeviceTunerNET.SharedModels;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace DeviceTunerNET.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private string _title = "Шей да пори!";
+        private string _title = "Шей да пори! 2";
+
+        private string _spreadsheetId = string.Empty;
+        public string SpreadsheetId 
+        {
+            get => _spreadsheetId;
+            set
+            {
+                SetProperty(ref _spreadsheetId, value);
+            }
+        }
+
         public string Title
         {
             get => _title;
@@ -16,19 +33,56 @@ namespace DeviceTunerNET.ViewModels
 
         private readonly IFileDialogService _dialogService;
         private readonly IDataRepositoryService _dataRepositoryService;
+        private readonly IDialogCaller _dialogCaller;
+        private readonly IGoogleDriveSheetsLister _googleDriveSheetsLister;
+        private readonly Dispatcher _dispatcher;
 
         public DelegateCommand OpenFileCommand { get; }
+        public DelegateCommand OpenUrlCommand { get; }
         public DelegateCommand SaveFileCommand { get; }
         public DelegateCommand CloseAppCommand { get; }
+        public DelegateCommand OpenUrlInBrowserCommand { get; }
 
-        public MainWindowViewModel(IFileDialogService dialogService, IDataRepositoryService dataRepositoryService)
+        public MainWindowViewModel(
+            IFileDialogService dialogService, 
+            IDataRepositoryService dataRepositoryService, 
+            IDialogCaller dialogCaller,
+            IGoogleDriveSheetsLister googleDriveSheetsLister)
         {
             _dialogService = dialogService;
             _dataRepositoryService = dataRepositoryService;
+            _dialogCaller = dialogCaller;
+            _googleDriveSheetsLister = googleDriveSheetsLister;
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
             OpenFileCommand = new DelegateCommand(OpenFileExecute, OpenFileCanExecute);
+            OpenUrlCommand = new DelegateCommand(async () => await OpenUrlExecute(), OpenUrlCanExecute);
             SaveFileCommand = new DelegateCommand(SaveFileExecute, SaveFileCanExecute);
             CloseAppCommand = new DelegateCommand(CloseAppExecute, CloseAppCanExecute);
+            OpenUrlInBrowserCommand = new DelegateCommand(OpenUrlInBrowserCommandExecute, OpenUrlInBrowserCommandCanExecute)
+                .ObservesProperty(() => SpreadsheetId);
+        }
+
+        private bool OpenUrlInBrowserCommandCanExecute()
+        {
+            return !string.IsNullOrEmpty(SpreadsheetId);
+        }
+
+        private void OpenUrlInBrowserCommandExecute()
+        {
+            var url = "https://docs.google.com/spreadsheets/d/" + SpreadsheetId;
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+        }
+
+        private bool OpenUrlCanExecute()
+        {
+            return true;
+        }
+
+        private Task OpenUrlExecute()
+        {
+            
+            return Task.Run(GetUrlWithDataAsync);
         }
 
         private bool CloseAppCanExecute()
@@ -62,8 +116,20 @@ namespace DeviceTunerNET.ViewModels
                 return;
 
             var selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
+
             // 1 - Поставщик данных - Excel
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
+            SpreadsheetId = string.Empty;
+        }
+
+        private async Task GetUrlWithDataAsync()
+        {
+            IEnumerable<UrlItem> historyUrls = await _googleDriveSheetsLister.ListAllSpreadsheetsAsync();
+            SpreadsheetId = _dialogCaller.GetUrl(historyUrls);
+            if (string.IsNullOrEmpty(SpreadsheetId))
+                return;
+
+            _dataRepositoryService.SetDevices(2, SpreadsheetId);
         }
     }
 }

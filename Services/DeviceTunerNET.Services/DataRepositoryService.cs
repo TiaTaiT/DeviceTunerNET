@@ -1,10 +1,13 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
-using DeviceTunerNET.SharedDataModel.Devices;
+using DryIoc;
 using Prism.Events;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace DeviceTunerNET.Services
 {
@@ -13,49 +16,66 @@ namespace DeviceTunerNET.Services
         private List<Cabinet> _cabinetsLst = new();
 
         private readonly IEventAggregator _ea;
-        private readonly IExcelDataDecoder _excelDataDecoder;
-
+        private readonly IResolverContext _resolver;
+        private IDataDecoder _decoder;
+        private Dispatcher _dispatcher;
         private int _dataProviderType = 1;
 
-        public DataRepositoryService(IEventAggregator ea, IExcelDataDecoder excelDataDecoder)
+        public DataRepositoryService(IEventAggregator ea, IDataDecoder dataDecoder, IResolverContext resolverContext)
         {
             _ea = ea;
-            _excelDataDecoder = excelDataDecoder;
+            _resolver = resolverContext;
+            _decoder = dataDecoder;
+            _dispatcher = Dispatcher.CurrentDispatcher;
         }
 
         public void SetDevices(int DataProviderType, string FullPathToData)
         {
             _dataProviderType = DataProviderType;
             var _fullPathToData = FullPathToData;
-
+            _dispatcher.BeginInvoke(() =>
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+            });
             _cabinetsLst.Clear();
             switch (_dataProviderType)
             {
                 case 1:
-                    _cabinetsLst = _excelDataDecoder.GetCabinetsFromExcel(_fullPathToData);
+                    _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.excelKey);
+                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData).ToList();
+                    break;
+                case 2:
+                    _decoder.Driver = _resolver.Resolve<ITablesManager>(serviceKey: DataSrvKey.googleKey);
+                    _cabinetsLst = _decoder.GetCabinets(_fullPathToData).ToList();
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории
-            _ea.GetEvent<MessageSentEvent>().Publish(new Message
+            _dispatcher.BeginInvoke(() => _ea.GetEvent<MessageSentEvent>().Publish(new Message
             {
                 ActionCode = MessageSentEvent.RepositoryUpdated
+            }));
+            _dispatcher.BeginInvoke(() =>
+            {
+                Mouse.OverrideCursor = null;
             });
         }
 
-        public bool SaveSerialNumber(int id, string serialNumber)
+        public async Task<bool> SaveSerialNumberAsync(int id, string serialNumber)
         {
+            /*
             if (_dataProviderType != 1)
                 return false;
-
-            return _excelDataDecoder.SaveSerialNumber(id, serialNumber);
+            */
+            return await _decoder.SaveSerialNumberAsync(id, serialNumber);
         }
 
-        public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
+        public async Task<bool> SaveQualityControlPassedAsync(int id, bool qualityControlPassed)
         {
+            /*
             if (_dataProviderType != 1)
                 return false;
-
-            return _excelDataDecoder.SaveQualityControlPassed(id, qualityControlPassed);
+            */
+            return await _decoder.SaveQualityControlPassedAsync(id, qualityControlPassed);
         }
 
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()
