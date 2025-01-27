@@ -239,8 +239,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         private async Task<bool> DownloadAsync(CancellationToken token, EthernetSwitch ethernetSwitch)
         {
             CurrentItemTextBox = ethernetSwitch.AddressIP; // Вывод адреса коммутатора в UI
-            ethernetSwitch.CIDR = IPMask;
-
+            IPMask = ethernetSwitch.CIDR;
             //var completeEthernetSwitch = _strategies.GetInstance<Eltex>().SendConfig(ethernetSwitch, GetSettingsDict(), token);
             var completeEthernetSwitch = _configUploader.SendConfig(ethernetSwitch, GetSettingsDict(ethernetSwitch), token);
             if (completeEthernetSwitch == null)
@@ -288,14 +287,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         {
             var settingsDict = new Dictionary<string, string>
             {
-                /*
-                {"DefaultIPAddress", DefaultIP},
-                {"DefaultAdminLogin", DefaultLogin},
-                {"DefaultAdminPassword", DefaultPassword},
-                {"NewAdminPassword", NewPassword},
-                {"NewAdminLogin", NewLogin},
-                {"IPmask", IPMask.ToString()}
-                */
                 {"%%DEFAULT_IP_ADDRESS%%", DefaultIP},
                 {"%%DEFAULT_ADMIN_LOGIN%%", DefaultLogin},
                 {"%%DEFAULT_ADMIN_PASSWORD%%", DefaultPassword},

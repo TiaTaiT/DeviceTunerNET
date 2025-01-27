@@ -102,6 +102,7 @@ namespace DeviceTunerNET
             container.Register<IConfigParser, ConfigParser>(Reuse.Transient);
             container.Register<IGoogleDriveSheetsLister, GoogleDriveSheetsLister>(Reuse.Transient);
             container.Register<IGoogleSpreadsheetCache, GoogleSpreadsheetCache>(Reuse.Transient);
+            container.Register<INetmaskConverter, NetmaskConverter>(Reuse.Transient);
 
 
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");

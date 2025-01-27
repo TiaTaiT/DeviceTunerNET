@@ -81,6 +81,11 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             get => _selectedDevice;
             set
             {
+                if (value == null)
+                {
+                    IsCanDoStart = false;
+                    return;
+                }
                 // Если пошкафная настройка коммутаторов и выделен коммутатор => можно активировать кнопку старт
                 if (IsCheckedByCabinets)
                 {

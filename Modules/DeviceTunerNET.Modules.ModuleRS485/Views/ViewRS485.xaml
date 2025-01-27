@@ -68,18 +68,6 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
-                <Label Content="IP Mask:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox Name="IPMask" Text="{Binding IPMask}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-            </Grid>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-
                 <Label Content="Default RS-485 address:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <TextBox Name="DefaultRS485Address" Text="{Binding DefaultRS485Address}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             </Grid>

@@ -93,7 +93,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Label Content="IP Mask:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox Name="IPMask" Text="{Binding IPMask}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <TextBox Name="IPMask" Text="{Binding IPMask}" IsReadOnly="True" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             </Grid>
             <Grid>
                 <Grid.RowDefinitions>

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using static System.Int32;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Appointments.AppointmentsProvider;
 
 namespace DeviceTunerNET.Services
 {
@@ -19,6 +18,7 @@ namespace DeviceTunerNET.Services
         #endregion Constants
 
         private int IPaddressCol = 0; // Index of the column containing device addresses
+        private int IPnetmaskCol = 0; // Index of the column containing device addresses
         private int RS485addressCol = 0; // Index of the column containing device addresses
         private int RS232addressCol = 0; // Index of the column containing device addresses
         private int nameCol = 0;    // Index of the column containing device names
@@ -32,6 +32,7 @@ namespace DeviceTunerNET.Services
 
         private const string ColProjectCaption = "Площадка"; //Заголовок столбца с наименованием проекта
         private const string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
+        private const string ColIPNetmaskCaption = "Netmask"; //Заголовок столбца с IP-адресами
         private const string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
         private const string ColRS232AddressCaption = "RS232"; //Заголовок столбца с адресами RS232
         private const string ColNamesCaption = "Обозначение"; //Заголовок столбца с обозначениями приборов
@@ -56,6 +57,7 @@ namespace DeviceTunerNET.Services
 
         private readonly IDeviceGenerator _devicesGenerator;
         private readonly IDialogCaller _dialogCaller;
+        private readonly INetmaskConverter _netmaskConverter;
 
         public ITablesManager Driver
         {
@@ -63,10 +65,11 @@ namespace DeviceTunerNET.Services
             set;
         }
 
-        public DataDecoder(IDeviceGenerator deviceGenerator, IDialogCaller dialogCaller)
+        public DataDecoder(IDeviceGenerator deviceGenerator, IDialogCaller dialogCaller, INetmaskConverter netmaskConverter)
         {
             _devicesGenerator = deviceGenerator;
             _dialogCaller = dialogCaller;
+            _netmaskConverter = netmaskConverter;
         }
 
         public IEnumerable<Cabinet> GetCabinets(string excelFileFullPath)
@@ -74,6 +77,7 @@ namespace DeviceTunerNET.Services
             //ExcelInit(excelFileFullPath);
             Driver.SetCurrentDocument(excelFileFullPath);
             IPaddressCol = 0;
+            IPnetmaskCol = 0;
             RS485addressCol = 0;
             RS232addressCol = 0;
             nameCol = 0;
@@ -83,6 +87,7 @@ namespace DeviceTunerNET.Services
             rangCol = 0;
             qcCol = 0;
             projectCol = 0;
+            
             //Определяем в каких столбцах находятся обозначения приборов и их адреса
             FindColumnIndexesByHeader();
             if (IsTableCaptionValid())
@@ -117,7 +122,9 @@ namespace DeviceTunerNET.Services
                 || parentCol == 0
                 || rangCol == 0
                 || qcCol == 0
-                || projectCol == 0)
+                || projectCol == 0
+                || IPaddressCol == 0
+                || IPnetmaskCol == 0)
             {
                 _dialogCaller.ShowMessage($"Error! There is no valid caption in the table!");
                 return false;
@@ -135,6 +142,7 @@ namespace DeviceTunerNET.Services
             {
                 TryParse(Driver.GetCellValueByIndex(rowIndex, RS232addressCol), out int devRS232Addr);
                 TryParse(Driver.GetCellValueByIndex(rowIndex, RS485addressCol), out int devRS485Addr);
+                TryParse(Driver.GetCellValueByIndex(rowIndex, IPnetmaskCol), out int ipNetmask);
 
                 var deviceDataSet = new DeviceDataSet
                 {
@@ -144,6 +152,7 @@ namespace DeviceTunerNET.Services
                     DevName = Driver.GetCellValueByIndex(rowIndex, nameCol),
                     DevModel = Driver.GetCellValueByIndex(rowIndex, modelCol),
                     DevIPAddr = Driver.GetCellValueByIndex(rowIndex, IPaddressCol),
+                    DevIPNetmask = ipNetmask,
                     DevSerial = Driver.GetCellValueByIndex(rowIndex, serialCol),
                     DevRang = Driver.GetCellValueByIndex(rowIndex, rangCol),
                     DevRS232Addr = devRS232Addr,
@@ -246,7 +255,7 @@ namespace DeviceTunerNET.Services
             //Debug.WriteLine("----------------");
         }
 
-        private static ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings)
+        private ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings)
         {
             if (device is EthernetSwitch ethernetSwitch)
             {
@@ -281,7 +290,7 @@ namespace DeviceTunerNET.Services
             return device;
         }
 
-        private static void FillC2000EthernetSettings(DeviceDataSet settings, C2000Ethernet C2000Ethernet)
+        private void FillC2000EthernetSettings(DeviceDataSet settings, C2000Ethernet C2000Ethernet)
         {
             C2000Ethernet.Id = settings.Id;
             C2000Ethernet.Designation = settings.DevName;
@@ -290,6 +299,7 @@ namespace DeviceTunerNET.Services
             C2000Ethernet.AddressRS485 = (uint)settings.DevRS485Addr;
             C2000Ethernet.AddressRS232 = settings.DevRS232Addr;
             C2000Ethernet.AddressIP = settings.DevIPAddr;
+            C2000Ethernet.Netmask = _netmaskConverter.CidrToSubnetMask(settings.DevIPNetmask);
             C2000Ethernet.NetName = settings.DevName;
             C2000Ethernet.QualityControlPassed = settings.DevQcPassed;
         }
@@ -301,6 +311,7 @@ namespace DeviceTunerNET.Services
             ethernetSwitch.Model = settings.DevModel;
             ethernetSwitch.Serial = settings.DevSerial;
             ethernetSwitch.AddressIP = settings.DevIPAddr;
+            ethernetSwitch.CIDR = settings.DevIPNetmask;
             ethernetSwitch.QualityControlPassed = settings.DevQcPassed;
         }
 
@@ -312,6 +323,7 @@ namespace DeviceTunerNET.Services
 
                 if (content == ColNamesCaption) { nameCol = colIndex; }
                 if (content == ColIPAddressCaption) { IPaddressCol = colIndex; }
+                if (content == ColIPNetmaskCaption) { IPnetmaskCol = colIndex; }
                 if (content == ColRS485AddressCaption) { RS485addressCol = colIndex; }
                 if (content == ColRS232AddressCaption) { RS232addressCol = colIndex; }
                 if (content == ColSerialCaption) { serialCol = colIndex; }
@@ -367,6 +379,7 @@ namespace DeviceTunerNET.Services
         internal string DevName { get; set; } = "";
         internal string DevModel { get; set; } = "";
         internal string DevIPAddr { get; set; } = "";
+        internal int DevIPNetmask { get; set; }
         internal string DevSerial { get; set; } = "";
         internal string DevRang { get; set; } = "";
         internal int DevRS232Addr { get; set; }
