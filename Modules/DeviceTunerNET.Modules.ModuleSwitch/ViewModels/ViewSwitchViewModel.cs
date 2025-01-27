@@ -345,6 +345,10 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     if (SwitchList.Count > 0)
                         IsCanDoStart = true;
                 }
+                if (SwitchList.Count > 0)
+                {
+                    SelectedDevice = SwitchList.FirstOrDefault();
+                }
             }
         }
 
