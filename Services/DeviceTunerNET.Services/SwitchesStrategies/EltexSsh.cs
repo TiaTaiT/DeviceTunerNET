@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DeviceTunerNET.Services.SwitchesStrategies
 {
@@ -95,8 +96,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
 */
             Stream.WriteLine("no ip telnet server");
             Stream.WriteLine("exit");
-            Stream.WriteLine("wr mem");
+            Stream.WriteLine("write memory");
             Stream.WriteLine("Y");
+            var response = GetDeviceResponse(); // This line is important for memory saving!!!
         }        
     }
 }
