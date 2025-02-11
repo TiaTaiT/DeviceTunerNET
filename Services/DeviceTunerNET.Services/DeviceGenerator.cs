@@ -2,7 +2,6 @@
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 
 namespace DeviceTunerNET.Services
@@ -68,6 +67,7 @@ namespace DeviceTunerNET.Services
 
         private readonly Dictionary<string, Func<IEthernetDevice>> _ethernetSwitches = new(comparer)
         {
+            {"MES3710P", () => new EthernetSwitch(null) },
             {"MES3508", () => new EthernetSwitch(null) },
             {"MES3508P", () => new EthernetSwitch(null) },
             {"MES2308", () => new EthernetSwitch(null) },
