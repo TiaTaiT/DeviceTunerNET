@@ -64,7 +64,7 @@ namespace DeviceTunerNET
 
         protected override void OnExit(ExitEventArgs e)
         {
-            Log.Error($"The application is closed.");
+            Log.Information($"The application is closed.");
             Log.CloseAndFlush();
 
             base.OnExit(e);
