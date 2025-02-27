@@ -279,6 +279,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    Log.Error(ex, ex.Message);
                     MessageBox.Show("Exception: " + ex.Message);
                 }
                 finally
@@ -318,6 +319,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    Log.Error(ex, ex.Message);
                     MessageBox.Show("Exception: " + ex.Message);
                 }
                 finally
