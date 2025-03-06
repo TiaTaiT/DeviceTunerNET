@@ -64,5 +64,10 @@ namespace DeviceTunerNET.SharedDataModel
         byte[] Response { get; }
 
         public bool CheckDeviceType();
+
+        /// <summary>
+        /// Reset all addresses to default (127)
+        /// </summary>
+        public void ResetAddresses();
     }
 }

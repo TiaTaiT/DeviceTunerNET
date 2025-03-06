@@ -120,5 +120,11 @@ namespace DeviceTunerNET.Services
             }
             return 127;
         }
+
+        public void ResetAllAddressesToDefault()
+        {
+            var c2000M = new C2000M(Port);
+            c2000M.ResetAddresses();
+        }
     }
 }

@@ -41,6 +41,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return success;
         }
 
+        public void ResetAddresses()
+        {
+            byte[] cmdString = GetChangeAddressPacket(127);
+            Port.SendWithoutСonfirmation([0x00, ..cmdString]);
+        }
+
         public bool SetAddress()
         {
             byte[] cmdString = GetChangeAddressPacket((byte)AddressRS485);

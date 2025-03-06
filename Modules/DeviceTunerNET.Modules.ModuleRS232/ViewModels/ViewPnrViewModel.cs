@@ -19,6 +19,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Serilog;
 using DeviceTunerNET.SharedDataModel.CustomExceptions;
+using Message = DeviceTunerNET.Core.Message;
 
 namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
@@ -40,6 +41,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         public DelegateCommand<ViewOnlineDeviceViewModel> ChangeAddressCommand { get; }
         public DelegateCommand<ViewOnlineDeviceViewModel> SetFirstFreeAddressCommand { get; }
         public DelegateCommand ShiftAddressesCommand { get; }
+        public DelegateCommand ResetAddressesCommand { get; }
         public DelegateCommand CheckedScanNetworkCommand { get; }
         public DelegateCommand UncheckedScanNetworkCommand { get; }
         
@@ -59,10 +61,11 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             _synth = new SpeechSynthesizer();
             _synth.SetOutputToDefaultAudioDevice();
             var voices = _synth.GetInstalledVoices(new CultureInfo("ru-RU"));
-            
-            if(voices.Count > 0)
-                _synth.SelectVoice(voices[0].VoiceInfo.Name);
 
+            if (voices.Count > 0)
+            {
+                _synth.SelectVoice(voices[0].VoiceInfo.Name);
+            }
             _serialTasks = serialTasks;
             _bolidDeviceSearcher = bolidDeviceSearcher;
             _bolidAddressChanger = BolidAddressChanger;
@@ -92,7 +95,42 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => StartAddress);
 
+            ResetAddressesCommand = new DelegateCommand(async () => await ResetAddressesCommandExecuteAsync(), ResetAddressesCommandCanExecute);
+
             #endregion InitializeCommands
+        }
+
+        private bool ResetAddressesCommandCanExecute()
+        {
+            return true;
+        }
+
+        private Task ResetAddressesCommandExecuteAsync()
+        {
+            return Task.Run(() =>
+            {
+                using SerialPort serialPort = new(CurrentRS485Port);
+                var comPort = new ComPort
+                {
+                    SerialPort = serialPort
+                };
+                try
+                {
+                    serialPort.Open();
+
+                    _bolidAddressChanger.Port = comPort;
+                    _bolidAddressChanger.ResetAllAddressesToDefault();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, ex.Message);
+                    MessageBox.Show("Exception: " + ex.Message);
+                }
+                finally
+                {
+                    serialPort.Close();
+                }
+            });
         }
         #endregion Constructor
 

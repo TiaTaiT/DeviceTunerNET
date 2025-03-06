@@ -157,8 +157,9 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0">
                     <RadioButton 
@@ -193,10 +194,17 @@
                     </i:Interaction.Triggers>
                 </ToggleButton>
 
+                <Button 
+                    Content="Reset" 
+                    Grid.Row="0" 
+                    Grid.Column="2" 
+                    Margin="0 5 0 0" 
+                    Command="{Binding ResetAddresses}" />
+
                 <ProgressBar 
                     Name="SearchPBar" 
                     Grid.Row="1"
-                    Grid.ColumnSpan="2"
+                    Grid.ColumnSpan="3"
                     Margin="5 5 5 0"
                     Minimum="0" 
                     Maximum="100" 
@@ -207,13 +215,14 @@
                 <Slider
                     Name="SearchSlider" 
                     Grid.Row="2"
-                    Grid.ColumnSpan="2"
+                    Grid.ColumnSpan="3"
                     Minimum="1"
                     Maximum="126"
                     TickPlacement="TopLeft"
                     TickFrequency="6"
                     Visibility="{Binding SearchSliderVisibility, UpdateSourceTrigger=PropertyChanged}"
                 />
+                
                 </Grid>
             </Border>
         </StackPanel>
