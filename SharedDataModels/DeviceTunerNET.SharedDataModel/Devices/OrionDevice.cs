@@ -139,7 +139,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private static byte[] GetResponseWithoutAuxiliaryData(byte[] responseArray)
         {
             var response = responseArray.ToList();
-            if (responseArray.Length < 2)
+            if (responseArray.Length <= 2)
                 return responseArray;
             // Удаляем последний байт (CRC8)
             response.RemoveAt(response.Count - 1);
