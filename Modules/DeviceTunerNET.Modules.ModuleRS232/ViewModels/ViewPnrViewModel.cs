@@ -95,43 +95,30 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => StartAddress);
 
-            ResetAddressesCommand = new DelegateCommand(async () => await ResetAddressesCommandExecuteAsync(), ResetAddressesCommandCanExecute);
+            ResetAddressesCommand = new DelegateCommand(async () => await ResetAddressesCommandExecuteAsync(), ResetAddressesCommandCanExecute)
+                .ObservesProperty(() => ScanSliderIsChecked)
+                .ObservesProperty(() => IsSliderEnable);
 
             #endregion InitializeCommands
         }
 
         private bool ResetAddressesCommandCanExecute()
         {
-            return true;
+            return IsSliderEnable && !ScanSliderIsChecked;
         }
 
         private Task ResetAddressesCommandExecuteAsync()
         {
+            IsAddressChangeButtonsEnable = false;
+            IsSliderEnable = false;
             return Task.Run(() =>
             {
-                using SerialPort serialPort = new(CurrentRS485Port);
-                var comPort = new ComPort
-                {
-                    SerialPort = serialPort
-                };
-                try
-                {
-                    serialPort.Open();
-
-                    _bolidAddressChanger.Port = comPort;
-                    _bolidAddressChanger.ResetAllAddressesToDefault();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, ex.Message);
-                    MessageBox.Show("Exception: " + ex.Message);
-                }
-                finally
-                {
-                    serialPort.Close();
-                }
+                _ = ResetAddressesToDefaultAsync();
             });
+            
         }
+
+        
         #endregion Constructor
 
         private Task SetFirstFreeAddressCommandExecuteAsync(ViewOnlineDeviceViewModel param)
@@ -246,6 +233,58 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             finally
             {
                 serialPort.Close();               
+            }
+        }
+
+        private async Task ResetAddressesToDefaultAsync()
+        {
+            var addresses = new List<uint>();
+            foreach (var deviceViewModel in OnlineDevicesList)
+            {
+                addresses.Add(deviceViewModel.Device.AddressRS485);
+            }
+
+            using SerialPort serialPort = new(CurrentRS485Port);
+            var comPort = new ComPort
+            {
+                SerialPort = serialPort
+            };
+
+            while (serialPort.IsOpen)
+            {
+                Console.WriteLine("Port is busy");
+                await Task.Delay(25);
+            }
+
+            try
+            {
+                serialPort.Open();
+
+                _bolidAddressChanger.Port = comPort;
+                foreach (var address in addresses)
+                {
+                    _bolidAddressChanger.ResetAddressToDefault(address);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                MessageBox.Show("Exception: " + ex.Message);
+            }
+            finally
+            {
+                serialPort.Close();
+                _dispatcher.Invoke(() =>
+                {
+                    OnlineDevicesList.Clear();
+                    
+                    IsSliderEnable = true;
+                    IsAddressChangeButtonsEnable = true;
+                    ScanSliderIsChecked = false;
+                    IsModeSwitchEnable = true;
+                    IsProgressIndeterminate = false;
+                });
             }
         }
 

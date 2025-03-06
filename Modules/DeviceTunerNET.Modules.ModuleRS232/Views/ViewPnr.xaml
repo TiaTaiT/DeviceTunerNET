@@ -198,8 +198,9 @@
                     Content="Reset" 
                     Grid.Row="0" 
                     Grid.Column="2" 
+                    Width="35"
                     Margin="0 5 0 0" 
-                    Command="{Binding ResetAddresses}" />
+                    Command="{Binding ResetAddressesCommand}" />
 
                 <ProgressBar 
                     Name="SearchPBar" 

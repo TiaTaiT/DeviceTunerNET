@@ -66,8 +66,8 @@ namespace DeviceTunerNET.SharedDataModel
         public bool CheckDeviceType();
 
         /// <summary>
-        /// Reset all addresses to default (127)
+        /// Reset current device address to default (127)
         /// </summary>
-        public void ResetAddresses();
+        public bool ResetAddress(byte currentDeviceAddress);
     }
 }

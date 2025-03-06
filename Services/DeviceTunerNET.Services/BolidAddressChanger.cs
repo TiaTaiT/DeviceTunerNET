@@ -30,7 +30,7 @@ namespace DeviceTunerNET.Services
             _token = cancellationToken;
             var c2000M = new C2000M(Port);
             c2000M.Port.MaxRepetitions = 1;
-
+            FoundDevices.Clear();
             while (!_token.IsCancellationRequested)
             {
                 var response = c2000M.GetModelCode(127, out var deviceCode);
@@ -121,10 +121,10 @@ namespace DeviceTunerNET.Services
             return 127;
         }
 
-        public void ResetAllAddressesToDefault()
+        public void ResetAddressToDefault(uint currentDeviceAddress)
         {
             var c2000M = new C2000M(Port);
-            c2000M.ResetAddresses();
+            c2000M.ResetAddress((byte)currentDeviceAddress);
         }
     }
 }

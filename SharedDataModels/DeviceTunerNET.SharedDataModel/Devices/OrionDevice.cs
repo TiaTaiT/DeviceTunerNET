@@ -41,10 +41,15 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return success;
         }
 
-        public void ResetAddresses()
+        public bool ResetAddress(byte currentDeviceAddress)
         {
-            byte[] cmdString = GetChangeAddressPacket(127);
-            Port.SendWithoutСonfirmation([0x00, ..cmdString]);
+            byte[] cmdString = GetChangeAddressPacket((byte)defaultAddress);
+            var result = AddressTransaction(currentDeviceAddress, cmdString, Timeouts.addressChanging);
+
+            if (result == null || result?.Length <= ResponseNewAddressOffset)
+                return false;
+
+            return result[ResponseNewAddressOffset] == (byte)defaultAddress;
         }
 
         public bool SetAddress()

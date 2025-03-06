@@ -17,6 +17,6 @@ namespace DeviceTunerNET.Services.Interfaces
         void TryToChangeDeviceAddress(uint address, IOrionDevice currentDevice);
 
         uint GetFirstMissing(IEnumerable<uint> numbers, uint maximum);
-        void ResetAllAddressesToDefault();
+        public void ResetAddressToDefault(uint currentDeviceAddress);
     }
 }
