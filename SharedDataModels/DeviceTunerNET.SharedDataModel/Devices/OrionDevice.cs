@@ -100,7 +100,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             Response = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
-            if(Response.Length == 0)
+            if(Response.Length <= ResponseDeviceModelOffset)
                 return false;
                 
             deviceCode = Response[ResponseDeviceModelOffset];
