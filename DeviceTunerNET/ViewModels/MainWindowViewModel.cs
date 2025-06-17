@@ -1,5 +1,4 @@
-﻿using DeviceTunerNET.Services;
-using DeviceTunerNET.Services.Interfaces;
+﻿using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedModels;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -7,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace DeviceTunerNET.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private string _title = "Шей да пори! 2";
+        private const string AppTitle = "Шей да пори 2!";
+        private string _title = AppTitle;
 
         private string _spreadsheetId = string.Empty;
         public string SpreadsheetId 
@@ -35,7 +34,6 @@ namespace DeviceTunerNET.ViewModels
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly IDialogCaller _dialogCaller;
         private readonly IGoogleDriveSheetsLister _googleDriveSheetsLister;
-        private readonly Dispatcher _dispatcher;
 
         public DelegateCommand OpenFileCommand { get; }
         public DelegateCommand OpenUrlCommand { get; }
@@ -53,7 +51,6 @@ namespace DeviceTunerNET.ViewModels
             _dataRepositoryService = dataRepositoryService;
             _dialogCaller = dialogCaller;
             _googleDriveSheetsLister = googleDriveSheetsLister;
-            _dispatcher = Dispatcher.CurrentDispatcher;
 
             OpenFileCommand = new DelegateCommand(OpenFileExecute, OpenFileCanExecute);
             OpenUrlCommand = new DelegateCommand(async () => await OpenUrlExecute(), OpenUrlCanExecute);
@@ -119,6 +116,10 @@ namespace DeviceTunerNET.ViewModels
 
             // 1 - Поставщик данных - Excel
             _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
+
+            var cabinetQuanitity = _dataRepositoryService.GetFullCabinets().Count;
+            var newTitle = AppTitle + "   Кол-во шкафов: " + cabinetQuanitity;
+            Title = newTitle;
             SpreadsheetId = string.Empty;
         }
 
@@ -130,6 +131,9 @@ namespace DeviceTunerNET.ViewModels
                 return;
 
             _dataRepositoryService.SetDevices(2, SpreadsheetId);
+            var cabinetQuanitity = _dataRepositoryService.GetFullCabinets().Count;
+            var newTitle = AppTitle + "     Кол-во шкафов: " + cabinetQuanitity;
+            Title = newTitle;
         }
     }
 }
