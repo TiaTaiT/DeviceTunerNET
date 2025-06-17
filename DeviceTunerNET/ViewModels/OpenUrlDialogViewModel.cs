@@ -6,17 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace DeviceTunerNET.ViewModels
 {
     internal class OpenUrlDialogViewModel : BindableBase, IDialogAware
     {
         private DelegateCommand<string> _okDialogCommand;
+        private DelegateCommand<string> _onOpenLinkCommand;
         public DelegateCommand<string> OkDialogCommand =>
             _okDialogCommand ??= new DelegateCommand<string>(CloseDialog, CanExecuteCloseDialog)
                 .ObservesProperty(() => SelectedSheet);
+        public DelegateCommand<string> OnOpenLinkCommand =>
+            _onOpenLinkCommand ??= new DelegateCommand<string>(CloseDialog, CanExecuteCloseDialog);
 
         private bool CanExecuteCloseDialog(string arg)
         {

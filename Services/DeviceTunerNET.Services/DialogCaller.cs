@@ -62,7 +62,7 @@ namespace DeviceTunerNET.Services
         {
             var manualReset = new ManualResetEvent(false);
             string url = string.Empty;
-            var result = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            var result = Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 var parameters = GetUrlDialogParams(historyUrls);
 
