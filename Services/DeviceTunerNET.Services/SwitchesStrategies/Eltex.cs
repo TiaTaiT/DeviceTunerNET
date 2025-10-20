@@ -14,17 +14,30 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
     {
         private readonly IEventAggregator _ea;
         private readonly INetworkUtils _networkUtils;
-        private readonly ISender _telnetSender;
+        private readonly ISender _telnetMarvellSender;
+        private readonly ISender _telnetBroadcomSender;
+        private ISender _currentTelnetSender;
         private readonly ISender _sshSender;
         private readonly ITftpServerManager _tftpServer;
         private readonly IConfigParser _configParser;
         private EthernetSwitch _ethernetSwitch;
         private int repeatNumer = 5;
         private Dictionary<string, string> _sDict;
-        
+        private readonly IEnumerable<string> _broadcomModels = 
+            [
+                "MES24",
+                "MES37",
+            ];
+        private readonly IEnumerable<string> _marvellModels =
+            [
+                "MES35",
+                "MES23",
+            ];
+
         private string _tftpSharedDirectory = @"C:\Temp\";
         private string _resourcePath = "Resources\\Files\\";
-        private string configTemplateFileName = @"EltexTemplateConfig.txt";
+        private string marvellTemplateFileName = @"EltexMarvellTemplateConfig.conf";
+        private string broadcomTemplateFileName = @"EltexBroadcomTemplateConfig.conf";
         private string configOutputFileName = @"config.txt";
 
         public string DefaultIpAddress { get; set; } = "192.168.1.239";
@@ -42,8 +55,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                      IEventAggregator eventAggregator)
         {
             _networkUtils = networkUtils;
-            _telnetSender = senders.ElementAt(0);//telnetSender;
-            _sshSender = senders.ElementAt(1);//sshSender;
+            _telnetMarvellSender = senders.ElementAt((int)SenderSrvKey.telnetMarvellKey);
+            _telnetBroadcomSender = senders.ElementAt((int)SenderSrvKey.telnetBroadcomKey);
+            _sshSender = senders.ElementAt((int)SenderSrvKey.sshKey);
             _tftpServer = tftpServer;
             _configParser = configParser;
             _ea = eventAggregator;
@@ -62,8 +76,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             _ethernetSwitch = ethernetSwitch;
             MessageToConsole("Waiting device...");
             _sDict = settingsDict;
-
-            var result = _configParser.Parse(settingsDict, _resourcePath + configTemplateFileName, _tftpSharedDirectory + configOutputFileName);
+            SetCurrentTelnetSender(ethernetSwitch.Model);
+            string configPath = GetConfigPath(ethernetSwitch.Model);
+            var result = _configParser.Parse(settingsDict, configPath, _tftpSharedDirectory + configOutputFileName);
             Debug.WriteLine("Parse result: " + result);
             var State = 0;
             var IsSendComplete = false;
@@ -80,7 +95,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                         break;
                     case 1:
                         // Пытаемся в цикле подключиться по Telnet (сервер Telnet загружается через некоторое время после успешного пинга)
-                        if (_telnetSender.CreateConnection(_sDict["%%DEFAULT_IP_ADDRESS%%"],
+                        if (_telnetMarvellSender.CreateConnection(_sDict["%%DEFAULT_IP_ADDRESS%%"],
                                                            DefaultTelnetPort, _sDict["%%DEFAULT_ADMIN_LOGIN%%"],
                                                            _sDict["%%DEFAULT_ADMIN_PASSWORD%%"],
                                                            null))
@@ -91,9 +106,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                         // copy tftp://192.168.1.254/config.txt running-config
                         MessageToConsole("Заливаем первую часть конфига в коммутатор по Telnet.");
 
-                        _telnetSender.Send(_ethernetSwitch, _sDict);
+                        _currentTelnetSender.Send(_ethernetSwitch, _sDict);
                         // Закрываем Telnet соединение
-                        _telnetSender.CloseConnection();
+                        _currentTelnetSender.CloseConnection();
                         State = 3;
                         break;
                     case 3:
@@ -131,6 +146,44 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                 return _ethernetSwitch;
             return null;
         }
+
+        private string GetConfigPath(string model)
+        {
+            foreach (var item in _broadcomModels)
+            {
+                if (model.StartsWith(item))
+                return _resourcePath + broadcomTemplateFileName;
+
+            }
+            foreach (var item in _marvellModels)
+            {
+                if (model.StartsWith(item))
+                    return _resourcePath + marvellTemplateFileName;
+            }
+            return "";
+        }
+
+        private void SetCurrentTelnetSender(string model)
+        {
+            foreach (var item in _broadcomModels)
+            {
+                if (model.StartsWith(item))
+                {
+                    _currentTelnetSender = _telnetBroadcomSender;
+                    return;
+                }
+            }
+            foreach (var item in _marvellModels)
+            {
+                if (model.StartsWith(item))
+                {
+                    _currentTelnetSender = _telnetMarvellSender;
+                    return;
+                }
+            }
+            throw new Exception("Unrecognized switch model");
+        }
+
         private void MessageToConsole(string message)
         {
             //Сообщаем об обновлении данных в репозитории

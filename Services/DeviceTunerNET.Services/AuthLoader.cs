@@ -17,7 +17,7 @@ namespace DeviceTunerNET.Services
         {
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri("https://elatale.ru/") // replace with your actual server URL
+                BaseAddress = new Uri("https://elatale.ru/")
             };
         }
 

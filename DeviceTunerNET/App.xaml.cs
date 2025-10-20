@@ -104,14 +104,14 @@ namespace DeviceTunerNET
             container.Register<IGoogleSpreadsheetCache, GoogleSpreadsheetCache>(Reuse.Transient);
             container.Register<INetmaskConverter, NetmaskConverter>(Reuse.Transient);
 
-
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
             containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");
 
             container.Register<ITablesManager, ExcelDriver>(serviceKey: DataSrvKey.excelKey);
             container.Register<ITablesManager, GoogleTablesDriver>(serviceKey: DataSrvKey.googleKey);
 
-            container.Register<ISender, EltexTelnet>(serviceKey: SenderSrvKey.telnetKey);
+            container.Register<ISender, EltexMarvellTelnet>(serviceKey: SenderSrvKey.telnetMarvellKey);
+            container.Register<ISender, EltexBroadcomTelnet>(serviceKey: SenderSrvKey.telnetBroadcomKey);
             container.Register<ISender, EltexSsh>(serviceKey: SenderSrvKey.sshKey);
         }
 

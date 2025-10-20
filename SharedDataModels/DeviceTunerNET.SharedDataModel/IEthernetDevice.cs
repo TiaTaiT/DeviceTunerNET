@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DeviceTunerNET.SharedDataModel
+﻿namespace DeviceTunerNET.SharedDataModel
 {
     public interface IEthernetDevice : ICommunicationDevice
     {

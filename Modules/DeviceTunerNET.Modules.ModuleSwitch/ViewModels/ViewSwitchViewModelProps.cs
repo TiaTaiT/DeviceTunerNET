@@ -8,24 +8,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
     public partial class ViewSwitchViewModel : RegionViewModelBase
     {
         #region Properties
-
-        private ObservableCollection<string> _availableStrategies;
-        public ObservableCollection<string> AvailableStrategies
-        {
-            get => _availableStrategies;
-            set => SetProperty(ref _availableStrategies, value);
-        }
-
-        private string _selectedStrategy;
-        public string SelectedStrategy
-        {
-            get => _selectedStrategy;
-            set
-            {
-                SetProperty(ref _selectedStrategy, value);
-            }
-        }
-
         private string _message;
         public string Message
         {

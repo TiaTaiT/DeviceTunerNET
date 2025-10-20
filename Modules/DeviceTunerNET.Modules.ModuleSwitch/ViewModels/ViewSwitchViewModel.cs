@@ -7,7 +7,6 @@ using Prism.Events;
 using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +41,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
-            SwitchList = new ObservableCollection<EthernetSwitch>();
+            SwitchList = [];
 
             CheckedCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
             UncheckedCommand = new DelegateCommand(StopCommandExecute, StopCommandCanExecute);
@@ -66,10 +65,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             IsCheckedByCabinets = true;
 
             AllowPrintLabel = true;
-
-            AvailableStrategies = new ObservableCollection<string>() { "Switch1", "Switch2", "Switch3" };
-
-            SelectedStrategy = AvailableStrategies?.FirstOrDefault();
         }
 
         #region Commands
@@ -80,7 +75,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool StopCommandCanExecute()
         {
-            return true;//throw new NotImplementedException();
+            return true;
         }
 
         private void StopCommandExecute()
@@ -103,7 +98,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool CanPrintLabelCommandExecute()
         {
-            if (/*IsCanDoStart == true && */SelectedPrinter != null) 
+            if (SelectedPrinter != null) 
             {
                 return true;
             }
@@ -240,7 +235,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         {
             CurrentItemTextBox = ethernetSwitch.AddressIP; // Вывод адреса коммутатора в UI
             IPMask = ethernetSwitch.CIDR;
-            //var completeEthernetSwitch = _strategies.GetInstance<Eltex>().SendConfig(ethernetSwitch, GetSettingsDict(), token);
             var completeEthernetSwitch = _configUploader.SendConfig(ethernetSwitch, GetSettingsDict(ethernetSwitch), token);
             if (completeEthernetSwitch == null)
             {
@@ -287,14 +281,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         {
             var settingsDict = new Dictionary<string, string>
             {
+                {"%%HOST_NAME%%", ethernetSwitch.Designation},
                 {"%%DEFAULT_IP_ADDRESS%%", DefaultIP},
                 {"%%DEFAULT_ADMIN_LOGIN%%", DefaultLogin},
                 {"%%DEFAULT_ADMIN_PASSWORD%%", DefaultPassword},
                 {"%%NEW_ADMIN_PASSWORD%%", NewPassword},
                 {"%%NEW_ADMIN_LOGIN%%", NewLogin},
-                {"%%IP_MASK%%", IPMask.ToString()},
-                {"%%NEW_IP_ADDRESS%%", ethernetSwitch.AddressIP },
-                {"%%HOST_NAME%%", ethernetSwitch.Designation }
+                {"%%IP_MASK%%", ethernetSwitch.CIDR.ToString()},
+                {"%%CONTROL_IP_ADDRESS%%", ethernetSwitch.AddressIP},
             };
             return settingsDict;
         }

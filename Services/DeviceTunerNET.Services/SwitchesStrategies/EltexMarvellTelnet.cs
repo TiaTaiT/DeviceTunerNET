@@ -1,15 +1,10 @@
-﻿using DeviceTunerNET.SharedDataModel;
-using MinimalisticTelnet;
+﻿using MinimalisticTelnet;
 using Prism.Events;
 
 namespace DeviceTunerNET.Services.SwitchesStrategies
 {
-    public class EltexTelnet : TelnetAbstract
+    public class EltexMarvellTelnet(EventAggregator ea, TelnetConnection tc) : TelnetAbstract(ea, tc)
     {
-        public EltexTelnet(EventAggregator ea, TelnetConnection tc) : base(ea, tc)
-        {
-        }
-
         public override bool SendPacket()
         {
             var tftpServerIp = NetUtils.GetLocalIpAddress();

@@ -1,4 +1,7 @@
-﻿namespace DeviceTunerNET.SharedDataModel
+﻿using System.Collections.Generic;
+using System.Net;
+
+namespace DeviceTunerNET.SharedDataModel
 {
     public class EthernetSwitch : CommunicationDevice, IEthernetDevice
     {
@@ -16,6 +19,10 @@
         /// LogIn user password
         /// </summary>
         public string Password { get; set; } = "";
+
+        /// <summary>
+        /// Control interface (Telnet, SSH, WEB) IP address
+        /// </summary>
         public string AddressIP { get; set; }
         public string Netmask { get; set; }
         public string MACaddress { get; set; }

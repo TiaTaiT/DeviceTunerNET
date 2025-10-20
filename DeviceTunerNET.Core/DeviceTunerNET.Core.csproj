@@ -59,7 +59,10 @@
     <Resource Include="Resources\Images\drive_link.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Files\EltexTemplateConfig.txt">
+    <Content Include="Resources\Files\EltexBroadcomTemplateConfig.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Files\EltexMarvellTemplateConfig.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

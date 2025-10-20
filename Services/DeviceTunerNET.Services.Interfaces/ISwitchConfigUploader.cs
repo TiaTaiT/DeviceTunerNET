@@ -1,10 +1,6 @@
 ﻿using DeviceTunerNET.SharedDataModel;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
@@ -38,7 +34,5 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="SettingsDict">Словарь с настройками коммутатора</param>
         /// <returns>Объект типа EthernetDevices с заполненными полями (которые удалось выцепить из коммутатора)</returns>
         public EthernetSwitch SendConfig(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict, CancellationToken token);
-
-        
     }
 }
