@@ -3,25 +3,20 @@ using DeviceTunerNET.SharedModels;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
-using Google.Apis.Sheets.v4.Data;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
-    public class GoogleSpreadsheetCache : IGoogleSpreadsheetCache
+    public class GoogleSpreadsheetCache(IAuthLoader authLoader) : IGoogleSpreadsheetCache
     {
+        private string _capsule = authLoader.Capsule;
         public Cell[,] Cache { get; private set; }
 
-        public void PopulateCache(string spreadsheetId, string sheetName, string credentialsPath)
+        public void PopulateCache(string spreadsheetId, string sheetName)
         {
             // Initialize Google Sheets API
-            var credential = GoogleCredential.FromFile(credentialsPath)
+            var credential = GoogleCredential.FromJson(_capsule)
                 .CreateScoped(SheetsService.Scope.SpreadsheetsReadonly);
             var service = new SheetsService(new BaseClientService.Initializer
             {

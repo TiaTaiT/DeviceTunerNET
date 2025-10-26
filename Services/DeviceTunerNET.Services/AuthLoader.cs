@@ -22,6 +22,7 @@ namespace DeviceTunerNET.Services
         }
 
         public IEnumerable<string> AvailableServicesNames { get; set; } = [];
+        public string Capsule { get; private set; } = string.Empty;
 
         public async Task<IEnumerable<string>> GetAvailableServices()
         {
@@ -43,6 +44,7 @@ namespace DeviceTunerNET.Services
                     {
                         featureNames.Add(feature.Name);
                     }
+                    Capsule = result.Capsule;
                 }
 
                 AvailableServicesNames = featureNames;
@@ -73,7 +75,8 @@ namespace DeviceTunerNET.Services
         int Id,
         string Serial,
         string Description,
-        IEnumerable<FunctionalitySimpleDto> Functionalities);
+        IEnumerable<FunctionalitySimpleDto> Functionalities,
+        string Capsule);
 
         public record FunctionalitySimpleDto(
         int Id,

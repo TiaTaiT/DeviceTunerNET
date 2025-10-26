@@ -18,17 +18,15 @@ namespace DeviceTunerNET.Services
 {
     public class GoogleDriveSheetsLister : IGoogleDriveSheetsLister
     {
-        private const string credentialsPath = "Resources\\Files\\firm-capsule-441717-e2-2f90d66e4ff2.json";
         private static readonly string[] Scopes = { DriveService.Scope.DriveReadonly };
         private static readonly string ApplicationName = "Google Drive API .NET 8.0 Example";
         private readonly DriveService _service;
-        public GoogleDriveSheetsLister() 
+        private string _capsule;
+        public GoogleDriveSheetsLister(IAuthLoader authLoader) 
         {
-            GoogleCredential credential;
-            using (var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read))
-            {
-                credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
-            }
+            _capsule = authLoader.Capsule;
+
+            var credential = GoogleCredential.FromJson(_capsule).CreateScoped(Scopes);
 
             _service = new DriveService(new BaseClientService.Initializer()
             {

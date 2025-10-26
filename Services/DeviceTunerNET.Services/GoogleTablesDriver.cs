@@ -1,5 +1,4 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
-using DeviceTunerNET.SharedDataModel;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
@@ -7,35 +6,29 @@ using Google.Apis.Sheets.v4.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
     public class GoogleTablesDriver : ITablesManager
     {
-        private static readonly string[] Scopes = { SheetsService.Scope.Spreadsheets };
         private static readonly string ApplicationName = "DeviceTunerNET";
         private readonly SheetsService _sheetsService;
         private readonly IGoogleSpreadsheetCache _spreadsheetCache;
+        private readonly string _capsule;
         private string _spreadsheetId;
         private string _sheetName;
-        private const string _credentialsPath = "Resources\\Files\\firm-capsule-441717-e2-2f90d66e4ff2.json";
 
         public int Rows { get; set; }
         public int Columns { get; set; }
 
-        public GoogleTablesDriver(IGoogleSpreadsheetCache googleSpreadsheetCache)
+        public GoogleTablesDriver(IGoogleSpreadsheetCache googleSpreadsheetCache, IAuthLoader authLoader)
         {
             _spreadsheetCache = googleSpreadsheetCache;
+            _capsule = authLoader.Capsule ?? "";
             GoogleCredential credential;
-            using (var stream = new FileStream(_credentialsPath, FileMode.Open, FileAccess.Read))
-            {
-                credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
-            }
 
+            credential = GoogleCredential.FromJson(_capsule);
             _sheetsService = new SheetsService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
@@ -53,7 +46,7 @@ namespace DeviceTunerNET.Services
         public bool SetCurrentPageByName(string pageName)
         {
             _sheetName = pageName;
-            _spreadsheetCache.PopulateCache(_spreadsheetId, _sheetName, _credentialsPath);
+            _spreadsheetCache.PopulateCache(_spreadsheetId, _sheetName);
             GetLastRowAndColumnIndex();
             return true;
         }
@@ -77,7 +70,6 @@ namespace DeviceTunerNET.Services
 
         public void SetCellColor(System.Drawing.Color color, int row, int column)
         {
-            //throw new NotImplementedException();
         }
 
         public async Task<bool> Save()
