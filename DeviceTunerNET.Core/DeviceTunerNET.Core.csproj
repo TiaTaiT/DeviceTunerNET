@@ -60,10 +60,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\Files\EltexBroadcomTemplateConfig.conf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\Files\EltexMarvellTemplateConfig.conf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

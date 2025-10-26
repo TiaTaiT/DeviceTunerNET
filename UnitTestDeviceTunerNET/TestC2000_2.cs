@@ -22,7 +22,7 @@ namespace UnitTestDeviceTunerNET
         [TestMethod]
         public void TestShleifAdc()
         {
-            var port = new ComPort
+            var port = new OrionComPort
             {
                 SerialPort = new SerialPort()
                 {
@@ -49,7 +49,7 @@ namespace UnitTestDeviceTunerNET
 
             var serialPort = new SerialPort { PortName = portName };
 
-            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
+            var testDevice = new Signal20P(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressRS485 = deviceAddress,
             };
@@ -65,7 +65,7 @@ namespace UnitTestDeviceTunerNET
         [TestMethod]
         public void TestDoor()
         {
-            var port = new ComPort
+            var port = new OrionComPort
             {
                 SerialPort = new SerialPort()
                 {

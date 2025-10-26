@@ -110,7 +110,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             return Task.Run(() =>
             {
                 using SerialPort serialPort = new(CurrentRS485Port);
-                var comPort = new ComPort
+                var comPort = new OrionComPort
                 {
                     SerialPort = serialPort
                 };
@@ -226,7 +226,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         private void WaitingNewDeviceLoop(CancellationToken token)
         {
             using SerialPort serialPort = new(CurrentRS485Port);
-            var comPort = new ComPort
+            var comPort = new OrionComPort
             {
                 SerialPort = serialPort
             };
@@ -268,7 +268,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             }
 
             using SerialPort serialPort = new(CurrentRS485Port);
-            var comPort = new ComPort
+            var comPort = new OrionComPort
             {
                 SerialPort = serialPort
             };
@@ -304,7 +304,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
             using (SerialPort serialPort = new(CurrentRS485Port))
             {
-                var comPort = new ComPort
+                var comPort = new OrionComPort
                 {
                     SerialPort = serialPort
                 };
@@ -336,7 +336,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         {
             using (SerialPort serialPort = new(CurrentRS485Port))
             {
-                var comPort = new ComPort
+                var comPort = new OrionComPort
                 {
                     SerialPort = serialPort
                 };

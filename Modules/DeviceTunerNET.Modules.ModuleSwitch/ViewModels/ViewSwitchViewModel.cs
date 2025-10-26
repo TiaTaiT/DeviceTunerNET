@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.Core;
+using DeviceTunerNET.Core.Enums;
 using DeviceTunerNET.Core.Mvvm;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
@@ -7,6 +8,7 @@ using Prism.Events;
 using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +25,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         private readonly ISwitchConfigUploader _configUploader;
         private readonly IPrintService _printService;
         private readonly IDialogCaller _dialogCaller;
+        private readonly ISerialTasks _serialTasks;
         private CancellationTokenSource _tokenSource = null;
         private readonly Dispatcher _dispatcher;
 
@@ -31,13 +34,15 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                                    ISwitchConfigUploader switchFactory,
                                    IEventAggregator ea,
                                    IPrintService printService,
-                                   IDialogCaller dialogCaller) : base(regionManager)
+                                   IDialogCaller dialogCaller,
+                                   ISerialTasks serialTasks) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
             _configUploader = switchFactory;
             _printService = printService;
             _dialogCaller = dialogCaller;
+            _serialTasks = serialTasks;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
@@ -61,6 +66,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             }
 
             SelectedPrinter = Printers?.FirstOrDefault();
+
+            AvailableProtocols.Add(SwitchProtocolEnum.Ethernet.ToString());
+            AvailableProtocols.Add(SwitchProtocolEnum.Serial.ToString());
+            CurrentProtocol = SwitchProtocolEnum.Ethernet.ToString();
+
+            AvailableComPorts = _serialTasks.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
+            CurrentRS485Port = AvailableComPorts?.LastOrDefault();
 
             IsCheckedByCabinets = true;
 
@@ -104,7 +116,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             }
             return false;
         }
-
 
         private bool CanPrintSelectedLabelCommandExecute()
         {
@@ -171,7 +182,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
                 if (_printService.CommonPrintLabel(
                         SelectedPrinter, 
-                        @PrintLabelPath, 
+                        @PrintLabelPath,
                         GetPrintingDict(printedSwitch)))
                 {
                     _dispatcher.BeginInvoke(new Action(() =>
@@ -202,7 +213,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                 if (ethernetSwitch?.Serial == null)
                 {
-                    if (await DownloadAsync(token, ethernetSwitch))
+                    if (await DownloadAsync(ethernetSwitch, token))
                     {
                     }
                 }
@@ -218,7 +229,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                     if (ethernetSwitch.Serial == null)
                     {
-                        if (await DownloadAsync(token, ethernetSwitch)) break;
+                        if (await DownloadAsync(ethernetSwitch, token)) break;
                     }
                     if (token.IsCancellationRequested)
                     {
@@ -231,10 +242,17 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             SliderIsChecked = false; // Всё! Залили настройки во все коммутаторы. Вырубаем слайдер (пололжение Off)
         }
 
-        private async Task<bool> DownloadAsync(CancellationToken token, EthernetSwitch ethernetSwitch)
+        private async Task<bool> DownloadAsync(EthernetSwitch ethernetSwitch, CancellationToken token)
         {
             CurrentItemTextBox = ethernetSwitch.AddressIP; // Вывод адреса коммутатора в UI
             IPMask = ethernetSwitch.CIDR;
+            if (!Enum.TryParse(CurrentProtocol, out SwitchProtocolEnum selectedProtocol)) 
+            {
+                Debug.WriteLine("Current protocol isn't available or unrecognized");
+                return false;
+            }
+            _configUploader.SetProtocol(selectedProtocol);
+            _configUploader.SetSerialPortName(CurrentRS485Port);
             var completeEthernetSwitch = _configUploader.SendConfig(ethernetSwitch, GetSettingsDict(ethernetSwitch), token);
             if (completeEthernetSwitch == null)
             {
@@ -263,7 +281,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             return false;
         }
 
-        private Dictionary<string, string> GetPrintingDict(EthernetSwitch ethSwitch)
+        private static Dictionary<string, string> GetPrintingDict(EthernetSwitch ethSwitch)
         {
             var printDict = new Dictionary<string, string>
             {
@@ -287,7 +305,8 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 {"%%DEFAULT_ADMIN_PASSWORD%%", DefaultPassword},
                 {"%%NEW_ADMIN_PASSWORD%%", NewPassword},
                 {"%%NEW_ADMIN_LOGIN%%", NewLogin},
-                {"%%IP_MASK%%", ethernetSwitch.CIDR.ToString()},
+                {"%%IP_MASK_CIDR%%", ethernetSwitch.CIDR.ToString()},
+                {"%%IP_MASK%%", ethernetSwitch.Netmask},
                 {"%%CONTROL_IP_ADDRESS%%", ethernetSwitch.AddressIP},
             };
             return settingsDict;

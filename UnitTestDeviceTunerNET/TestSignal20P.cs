@@ -17,7 +17,7 @@ namespace UnitTestDeviceTunerNET
         [TestMethod]
         public void TestGetConfig()
         {
-            var device = new Signal20P(new ComPort() { SerialPort = null })
+            var device = new Signal20P(new OrionComPort() { SerialPort = null })
             {
                 AddressRS485 = 127
             };
@@ -36,7 +36,7 @@ namespace UnitTestDeviceTunerNET
 
             port.Open();
 
-            var device = new Signal20P(new ComPort() { SerialPort = port } )
+            var device = new Signal20P(new OrionComPort() { SerialPort = port } )
             {
                 AddressRS485 = 127
             };
@@ -57,7 +57,7 @@ namespace UnitTestDeviceTunerNET
 
             port.Open();
 
-            var device = new Signal20P(new ComPort() { SerialPort = port })
+            var device = new Signal20P(new OrionComPort() { SerialPort = port })
             {
                 AddressRS485 = 127
             };

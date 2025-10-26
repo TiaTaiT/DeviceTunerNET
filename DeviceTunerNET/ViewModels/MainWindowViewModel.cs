@@ -11,7 +11,7 @@ namespace DeviceTunerNET.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private const string AppTitle = "Шей да пори 2!";
+        private const string AppTitle = "Шей да пори 2.1";
         private string _title = AppTitle;
 
         private string _spreadsheetId = string.Empty;

@@ -70,8 +70,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
         {
             _ethernetDevice = ethernetSwitch;
             _sDict = settingsDict;
-
+            _ethernetDevice = GetSwitchInfo(ethernetSwitch);
             SendPacket(); // Передаём настройки по Telnet-протоколу
+            
             _tc.ConnectionClose(); // Закрываем Telnet-соединение
 
             return _ethernetDevice; // Возвращаем объект с заполненными свойствами полученными из коммутатора
@@ -79,5 +80,6 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
 
         // Пакет команд для отправки на коммутатор
         public abstract bool SendPacket();
+        public abstract EthernetSwitch GetSwitchInfo(EthernetSwitch ethernetSwitch);
     }
 }

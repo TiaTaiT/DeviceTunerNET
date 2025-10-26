@@ -1,18 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
-using Tftp.Net;
-using System.Net;
 
 namespace DeviceTunerNET.Services
 {
-    public class UploadSwitchManager //: IUploadManager
+    public class UploadSwitchManager
 
     {
         private readonly IConfigParser _configParser;
@@ -43,7 +38,7 @@ namespace DeviceTunerNET.Services
             _tftpServerManager.Start(ServerDirectory);
             var result3 = Send(ethernetSwitch, token);
             _tftpServerManager.Stop();
-            //var result4
+
             return result3;
         }
 

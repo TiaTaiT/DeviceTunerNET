@@ -1,7 +1,5 @@
-﻿using DeviceTunerNET.SharedDataModel.Devices;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.IO.Ports;
 
 namespace DeviceTunerNET.SharedDataModel
 {

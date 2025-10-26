@@ -198,6 +198,29 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 SetProperty(ref _isSelectedSwitchCanBePrinted, value);
             }
         }
+
+        public ObservableCollection<string> AvailableProtocols { get; set; } = [];
+
+        private string _currentProtocol;
+        public string CurrentProtocol
+        {
+            get => _currentProtocol;
+            set => SetProperty(ref _currentProtocol, value);
+        }
+
+        private ObservableCollection<string> _availableComPorts = [];
+        public ObservableCollection<string> AvailableComPorts
+        {
+            get => _availableComPorts;
+            set => SetProperty(ref _availableComPorts, value);
+        }
+
+        private string _currentRS485Port;
+        public string CurrentRS485Port
+        {
+            get => _currentRS485Port;
+            set => SetProperty(ref _currentRS485Port, value);
+        }
         #endregion
     }
 }

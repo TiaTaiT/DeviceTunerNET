@@ -106,7 +106,7 @@ namespace DeviceTunerNET.Services
         {
             if (Protocol.Equals("COM"))
             {
-                var port = new ComPort()
+                var port = new OrionComPort()
                 {
                     SerialPort = new SerialPort(PortName ?? "COM1")
                 };

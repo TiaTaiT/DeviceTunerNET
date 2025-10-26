@@ -1,4 +1,5 @@
-﻿using DeviceTunerNET.SharedDataModel;
+﻿using DeviceTunerNET.Core.Enums;
+using DeviceTunerNET.SharedDataModel;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -24,8 +25,11 @@ namespace DeviceTunerNET.Services.Interfaces
         //Путь к файлу RSA ключа шифрования (SSH)
         public string RsaKeyFile { get; set; }
 
-        //Запрос модели коммутатора по адресу DefaultIpAddress
-        public string GetSwitchModel();
+        // Set download protocol (Serial port, Ethernet  port,...)
+        public void SetProtocol(SwitchProtocolEnum switchProtocol);
+
+        // Set serial port name for switch console
+        public void SetSerialPortName(string serialPortName);
 
         /// <summary>
         /// Заливка конфига в коммутатор по протоколу Telnet и\или SSH

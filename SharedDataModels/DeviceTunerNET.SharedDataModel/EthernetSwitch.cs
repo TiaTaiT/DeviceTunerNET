@@ -13,20 +13,20 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// LogIn user name
         /// </summary>
-        public string Username { get; set; } = "";
+        public string Username { get; set; } = string.Empty;
 
         /// <summary>
         /// LogIn user password
         /// </summary>
-        public string Password { get; set; } = "";
+        public string Password { get; set; } = string.Empty;
 
         /// <summary>
         /// Control interface (Telnet, SSH, WEB) IP address
         /// </summary>
-        public string AddressIP { get; set; }
-        public string Netmask { get; set; }
-        public string MACaddress { get; set; }
-        public string DefaultGateway { get; set; }
+        public string AddressIP { get; set; } = string.Empty;
+        public string Netmask { get; set; } = string.Empty;
+        public string MACaddress { get; set; } = string.Empty;
+        public string DefaultGateway { get; set; } = string.Empty;
         public int CIDR
         {
             get => EthernetUtils.ConvertToCidr(Netmask);

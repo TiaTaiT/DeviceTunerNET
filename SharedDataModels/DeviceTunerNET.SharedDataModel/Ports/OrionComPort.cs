@@ -1,6 +1,5 @@
 ﻿using DeviceTunerNET.SharedDataModel.Devices;
 using DeviceTunerNET.SharedDataModel.Utils;
-using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -8,9 +7,9 @@ using System.Threading;
 
 namespace DeviceTunerNET.SharedDataModel.Ports
 {
-    public class ComPort : IPort
+    public class OrionComPort : IPort
     {
-        private static List<byte> _readBuffer = new();// Буфер чтения для RS485
+        private static List<byte> _readBuffer = [];// Буфер чтения для RS485
         protected byte[] _sendData; // Данные для отправки в порт
 
         /// <summary>

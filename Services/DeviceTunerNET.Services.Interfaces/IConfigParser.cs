@@ -33,7 +33,11 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="outputConfigPath">Output config file to download to the switch</param>
         /// <returns></returns>
         public Errors Parse(Dictionary<string, string> variables, string templateConfigPath, string outputConfigPath);
-        
-        
+
+        /// <summary>
+        /// Get parsed config line by line
+        /// </summary>
+        /// <returns>Parsed config lines</returns>
+        public IEnumerable<string> GetConfig();
     }
 }

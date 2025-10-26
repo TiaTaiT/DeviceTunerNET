@@ -21,6 +21,8 @@ using Serilog;
 using System.Linq;
 using System.Threading.Tasks;
 using Prism.Container.DryIoc;
+using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.Ports;
 
 namespace DeviceTunerNET
 {
@@ -103,6 +105,8 @@ namespace DeviceTunerNET
             container.Register<IGoogleDriveSheetsLister, GoogleDriveSheetsLister>(Reuse.Transient);
             container.Register<IGoogleSpreadsheetCache, GoogleSpreadsheetCache>(Reuse.Transient);
             container.Register<INetmaskConverter, NetmaskConverter>(Reuse.Transient);
+            container.Register<IPort, SimpleComPort>(Reuse.Transient);
+            container.Register<ISwitchInfoParser, EltexMarvellInfoParser>(Reuse.Transient);
 
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
             containerRegistry.RegisterDialog<OpenUrlDialog, OpenUrlDialogViewModel>("OpenUrlDialog");

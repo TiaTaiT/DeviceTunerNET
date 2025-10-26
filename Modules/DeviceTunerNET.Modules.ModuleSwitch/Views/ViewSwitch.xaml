@@ -41,6 +41,40 @@
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">Protocol:</Label>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox ItemsSource="{Binding AvailableProtocols}" 
+                          SelectedItem="{Binding CurrentProtocol}" 
+                          Grid.Column="0" 
+                          HorizontalAlignment="Stretch"
+              
+                          VerticalAlignment="Center" 
+                          Margin="0,2,5,2" />
+
+                    <ComboBox ItemsSource="{Binding AvailableComPorts}" 
+                          SelectedItem="{Binding CurrentRS485Port}" 
+                          Grid.Column="1" 
+                          HorizontalAlignment="Left" 
+                          VerticalAlignment="Center" 
+                          Width="65" Grid.ColumnSpan="2" 
+                          Margin="0,2,0,2"/>    
+                </Grid>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
+                </Grid.ColumnDefinitions>
 
                 <Label Content="Default login:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <TextBox Name="DefaultLoginText" Text="{Binding DefaultLogin}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>

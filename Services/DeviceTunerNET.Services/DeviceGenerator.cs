@@ -80,6 +80,7 @@ namespace DeviceTunerNET.Services
             {"MES2324_AC", () => new EthernetSwitch(null) },
             {"MES2324_DC", () => new EthernetSwitch(null) },
             {"MES2424_AC", () => new EthernetSwitch(null) },
+            {"MES2424P", () => new EthernetSwitch(null) },
             {"MES2424P_AC", () => new EthernetSwitch(null) },
             {"MES2408_AC", () => new EthernetSwitch(null) },
             {"MES2408P_AC", () => new EthernetSwitch(null) },

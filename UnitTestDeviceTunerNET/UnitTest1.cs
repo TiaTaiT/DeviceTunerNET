@@ -90,7 +90,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             
             
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
+            var testDevice = new Signal20P(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressRS485 = deviceAddress,
             };
@@ -109,7 +109,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             
 
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
+            var testDevice = new Signal20P(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressRS485 = deviceAddress,
             };
@@ -128,7 +128,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             
             var serialPort = new SerialPort { PortName = comPort };
             
-            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
+            var testDevice = new Signal20P(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressRS485 = deviceAddress,
             };
@@ -147,7 +147,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
            
 
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
+            var testDevice = new Signal20P(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressRS485 = deviceAddress,
             };
@@ -167,7 +167,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
            
 
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
+            var testDevice = new Signal20P(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressRS485 = deviceAddress,
             };
@@ -185,7 +185,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         {
 
             var serialPort = new SerialPort { PortName = comPort };
-            var masterDevice1 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var masterDevice1 = new C2000Ethernet(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.12",
                 NetworkMode = C2000Ethernet.Mode.master,
@@ -193,7 +193,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 AddressRS485 = 5,
                 MACaddress = "AA:BB:CC:DD:EE:FF"
             };
-            var masterDevice2 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var masterDevice2 = new C2000Ethernet(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.13",
                 NetworkMode = C2000Ethernet.Mode.master,
@@ -201,7 +201,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 AddressRS485 = 6,
                 MACaddress = "AA:BB:CC:DD:EE:FE"
             };
-            var masterDevice3 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var masterDevice3 = new C2000Ethernet(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.14",
                 NetworkMode = C2000Ethernet.Mode.master,
@@ -209,7 +209,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 AddressRS485 = 6,
                 MACaddress = "AA:BB:CC:DD:EE:FD"
             };
-            var masterDevice4 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var masterDevice4 = new C2000Ethernet(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.15",
                 NetworkMode = C2000Ethernet.Mode.master,
@@ -217,7 +217,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 AddressRS485 = 6,
                 MACaddress = "AA:BB:CC:DD:EE:FC"
             };
-            var masterDevice5 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var masterDevice5 = new C2000Ethernet(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.16",
                 NetworkMode = C2000Ethernet.Mode.master,
@@ -225,7 +225,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 AddressRS485 = 6,
                 MACaddress = "AA:BB:CC:DD:EE:FB"
             };
-            var slaveDevice = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var slaveDevice = new C2000Ethernet(new OrionComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.33",
                 NetName = "РАБ",
