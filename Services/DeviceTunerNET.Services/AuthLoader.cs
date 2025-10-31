@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Management;
@@ -11,10 +12,12 @@ namespace DeviceTunerNET.Services
     public class AuthLoader : IAuthLoader
     {
         private string _serial = string.Empty;
+        private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
 
-        public AuthLoader()
+        public AuthLoader(ILogger logger)
         {
+            _logger = logger;
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri("https://crudaster.pro/")
@@ -54,7 +57,8 @@ namespace DeviceTunerNET.Services
             catch (Exception ex)
             {
                 // Log or handle network errors
-                throw new ApplicationException("Error fetching hardware", ex);
+                _logger.Error(ex, "An error occured in FetchFataAsync");
+                return [];
             }
         }
 

@@ -4,15 +4,11 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using Google.Apis.Services;
-using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web.Services.Description;
+using Serilog;
 
 namespace DeviceTunerNET.Services
 {
@@ -21,12 +17,23 @@ namespace DeviceTunerNET.Services
         private static readonly string[] Scopes = { DriveService.Scope.DriveReadonly };
         private static readonly string ApplicationName = "Google Drive API .NET 8.0 Example";
         private readonly DriveService _service;
+        private readonly ILogger _logger;
         private string _capsule;
-        public GoogleDriveSheetsLister(IAuthLoader authLoader) 
+        public GoogleDriveSheetsLister(IAuthLoader authLoader, ILogger logger) 
         {
+            _logger = logger;
             _capsule = authLoader.Capsule;
 
-            var credential = GoogleCredential.FromJson(_capsule).CreateScoped(Scopes);
+            GoogleCredential credential;
+            try
+            {
+                credential = GoogleCredential.FromJson(_capsule).CreateScoped(Scopes);
+            }
+            catch(Exception ex) 
+            {
+                _logger.Error(ex, "Parsing capsule error");
+                return;
+            }
 
             _service = new DriveService(new BaseClientService.Initializer()
             {
