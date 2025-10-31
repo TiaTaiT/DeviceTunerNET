@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Prism.Container.DryIoc;
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Ports;
+using Serilog.Exceptions;
 
 namespace DeviceTunerNET
 {
@@ -57,7 +58,14 @@ namespace DeviceTunerNET
             }
 
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.File("log.txt")
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+                .Enrich.WithExceptionDetails()
+                .WriteTo.File(
+                    path: "logs/log.txt",
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}")
                 .CreateLogger();
             Log.Information($"Application startup.");
 
@@ -83,6 +91,8 @@ namespace DeviceTunerNET
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             var container = containerRegistry.GetContainer();
+
+            container.RegisterInstance(Log.Logger);
 
             container.Register<IAuthLoader, AuthLoader>(Reuse.Singleton);
             container.Register<IMessageService, MessageService>(Reuse.Singleton);
