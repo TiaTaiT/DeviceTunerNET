@@ -44,28 +44,35 @@ namespace DeviceTunerNET.Services
 
         public async Task<IEnumerable<UrlItem>> ListAllSpreadsheetsAsync()
         {
-            var request = _service.Files.List();
-            request.Q = "mimeType='application/vnd.google-apps.spreadsheet'";
-            request.Fields = "files(id, name)";
-
-            FileList result = await request.ExecuteAsync();
-            IList<Google.Apis.Drive.v3.Data.File> files = result.Files;
-
             var ids = new List<UrlItem>();
-
-            if (files != null && files.Count > 0)
+            try
             {
-                Console.WriteLine("Spreadsheets:");
-                foreach (var file in files)
+                var request = _service.Files.List();
+                request.Q = "mimeType='application/vnd.google-apps.spreadsheet'";
+                request.Fields = "files(id, name)";
+
+                FileList result = await request.ExecuteAsync();
+                IList<Google.Apis.Drive.v3.Data.File> files = result.Files;
+
+                if (files != null && files.Count > 0)
                 {
-                    ids.Add(new UrlItem(file.Name, file.Id));
-                    Debug.WriteLine($"Name: {file.Name}, ID: {file.Id}");
+                    Console.WriteLine("Spreadsheets:");
+                    foreach (var file in files)
+                    {
+                        ids.Add(new UrlItem(file.Name, file.Id));
+                        Debug.WriteLine($"Name: {file.Name}, ID: {file.Id}");
+                    }
+                }
+                else
+                {
+                    _logger.Information("No Google spreadsheets found.");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.WriteLine("No spreadsheets found.");
+                _logger.Error(ex, "Google services error");
             }
+            
             return ids;
         }
     }
